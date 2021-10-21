@@ -21,7 +21,7 @@ module.exports = () => {
   cron.schedule(cronTime.everyHour(), async function() {
     const epoch = await callTx(getEpoch);
 
-    const callback = (status, msg) => {
+    const callback = (status, ...msg) => {
       sendEmail(status ? 
         `Started Epoch ${+epoch+1} successfully` :
         `Failed to start Epoch ${+epoch+1}`, 
@@ -36,7 +36,7 @@ module.exports = () => {
 
     const epoch = await callTx(getEpoch);
 
-    const callback = (status, msg) => {
+    const callback = (status, ...msg) => {
       if (epoch === 0) return;
       sendEmail(status ? 
         `Ended Epoch ${epoch} successfully` :
