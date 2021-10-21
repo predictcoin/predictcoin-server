@@ -22,11 +22,11 @@ module.exports = () => {
     const epoch = await callTx(getEpoch);
 
     const callback = (status, ...msg) => {
-      sendEmail(status ? 
+      const title = status ? 
         `Started Epoch ${+epoch+1} successfully` :
-        `Failed to start Epoch ${+epoch+1}`, 
-        msg
-      );
+        `Failed to start Epoch ${+epoch+1}`;
+      console.log(title, msg);
+      sendEmail( title, msg );
     }
 
     await sendTx(startRound, callback);
@@ -38,11 +38,12 @@ module.exports = () => {
 
     const callback = (status, ...msg) => {
       if (epoch === 0) return;
-      sendEmail(status ? 
+      const title = status ? 
         `Ended Epoch ${epoch} successfully` :
-        `Failed to end Epoch ${epoch}`, 
-        msg
-      );
+        `Failed to end Epoch ${epoch}`;
+        
+      console.log(title, msg);
+      sendEmail( title, msg );
     }
 
     await sendTx(endRound, callback);
