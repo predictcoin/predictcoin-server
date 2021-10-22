@@ -6,11 +6,9 @@ const fetch = require('node-fetch');
 const url = "https://predictcoin-server.herokuapp.com/";
 
 (() => {
-  cron.schedule('0 */25 * * * *', () => {
-
+  cron.schedule('0 */10 * * * *', () => {
     fetch(url)
       .then(res => console.log(`response-ok: ${res.ok}, status: ${res.status}`))
       .catch(err => {});
-
   });
 })();
