@@ -3,7 +3,7 @@ const cron = require('node-cron');
 const fetch = require('node-fetch');
 
 // globals
-const url = "http://127.0.0.1:3000/";
+const url = "https://predictcoin-server.herokuapp.com/";
 
 (() => {
   cron.schedule('0 */25 * * * *', () => {
