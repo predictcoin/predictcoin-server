@@ -18,22 +18,21 @@ const getEpoch = predictionContract.methods.currentEpoch();
 
 //Schedule tasks to be run on the server.
 module.exports = () => {
-  cron.schedule(cronTime.everyHour(), async function() {
+  cron.schedule(cronTime.everyHourAt(30), async function() {
     const epoch = await callTx(getEpoch);
 
     const callback = (status, ...msg) => {
       const title = status ? 
         `Started Epoch ${+epoch+1} successfully` :
         `Failed to start Epoch ${+epoch+1}`;
-      console.log(title, msg);
-      sendEmail( title, msg );
+      console.log(title, msg.join(" "));
+      sendEmail( title, msg.join(" ") );
     }
 
     await sendTx(startRound, callback);
   });
 
-  cron.schedule(cronTime.everyHourAt(4), async function() {
-
+  cron.schedule(cronTime.everyHourAt(2), async function() {
     const epoch = await callTx(getEpoch);
 
     const callback = (status, ...msg) => {
@@ -41,9 +40,9 @@ module.exports = () => {
       const title = status ? 
         `Ended Epoch ${epoch} successfully` :
         `Failed to end Epoch ${epoch}`;
-        
-      console.log(title, msg);
-      sendEmail( title, msg );
+
+      console.log(title, msg.join(" "));
+      sendEmail( title, msg.join(" ") );
     }
 
     await sendTx(endRound, callback);
