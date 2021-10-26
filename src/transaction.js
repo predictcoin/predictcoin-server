@@ -18,7 +18,7 @@ async function send(tx, callback){
         callback(true, receipt.transactionHash);
       })
       .on('error', function(error, receipt) { 
-        callback(false, error.message, receipt.transactionHash);
+        callback(false, error.message, receipt ? receipt.transactionHash: "");
       });
   }
   catch(error) {
