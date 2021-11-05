@@ -18,33 +18,35 @@ const getEpoch = predictionContract.methods.currentEpoch();
 
 //Schedule tasks to be run on the server.
 module.exports = () => {
-  cron.schedule(cronTime.everyHourAt(30), async function() {
+  cron.schedule(cronTime.everyMinute(), async function() {
     const epoch = await callTx(getEpoch);
 
-    const callback = (status, ...msg) => {
-      const title = status ? 
-        `Started Epoch ${+epoch+1} successfully` :
-        `Failed to start Epoch ${+epoch+1}`;
-      console.log(title, msg.join(" "));
-      sendEmail( title, msg.join(" ") );
-    }
+    console.log(epoch.toString());
+    // const callback = (status, ...msg) => {
+    //   const title = status ? 
+    //     `Started Epoch ${+epoch+1} successfully` :
+    //     `Failed to start Epoch ${+epoch+1}`;
+    //   console.log(title, msg.join(" "));
+    //   sendEmail( title, msg.join(" ") );
+    // }
 
-    await sendTx(startRound, callback);
+    // await sendTx(startRound, callback);
   });
 
-  cron.schedule(cronTime.everyHourAt(2), async function() {
+  cron.schedule(cronTime.everyMinute(), async function() {
     const epoch = await callTx(getEpoch);
 
-    const callback = (status, ...msg) => {
-      if (epoch === 0) return;
-      const title = status ? 
-        `Ended Epoch ${epoch} successfully` :
-        `Failed to end Epoch ${epoch}`;
+    console.log(epoch.toString());
+    // const callback = (status, ...msg) => {
+    //   if (epoch === 0) return;
+    //   const title = status ? 
+    //     `Ended Epoch ${epoch} successfully` :
+    //     `Failed to end Epoch ${epoch}`;
 
-      console.log(title, msg.join(" "));
-      sendEmail( title, msg.join(" ") );
-    }
+    //   console.log(title, msg.join(" "));
+    //   sendEmail( title, msg.join(" ") );
+    // }
 
-    await sendTx(endRound, callback);
+    // await sendTx(endRound, callback);
   });
 }
