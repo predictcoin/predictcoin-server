@@ -21,32 +21,30 @@ module.exports = () => {
   cron.schedule(cronTime.everyMinute(), async function() {
     const epoch = await callTx(getEpoch);
 
-    console.log(epoch.toString());
-    // const callback = (status, ...msg) => {
-    //   const title = status ? 
-    //     `Started Epoch ${+epoch+1} successfully` :
-    //     `Failed to start Epoch ${+epoch+1}`;
-    //   console.log(title, msg.join(" "));
-    //   sendEmail( title, msg.join(" ") );
-    // }
+    const callback = (status, ...msg) => {
+      const title = status ? 
+        `Started Epoch ${+epoch+1} successfully` :
+        `Failed to start Epoch ${+epoch+1}`;
+      console.log(title, msg.join(" "));
+      sendEmail( title, msg.join(" ") );
+    }
 
-    // await sendTx(startRound, callback);
+    await sendTx(startRound, callback);
   });
 
   cron.schedule(cronTime.everyMinute(), async function() {
     const epoch = await callTx(getEpoch);
 
-    console.log(epoch.toString());
-    // const callback = (status, ...msg) => {
-    //   if (epoch === 0) return;
-    //   const title = status ? 
-    //     `Ended Epoch ${epoch} successfully` :
-    //     `Failed to end Epoch ${epoch}`;
+    const callback = (status, ...msg) => {
+      if (epoch === 0) return;
+      const title = status ? 
+        `Ended Epoch ${epoch} successfully` :
+        `Failed to end Epoch ${epoch}`;
 
-    //   console.log(title, msg.join(" "));
-    //   sendEmail( title, msg.join(" ") );
-    // }
+      console.log(title, msg.join(" "));
+      sendEmail( title, msg.join(" ") );
+    }
 
-    // await sendTx(endRound, callback);
+    await sendTx(endRound, callback);
   });
 }
