@@ -18,18 +18,19 @@ const getEpoch = predictionContract.methods.currentEpoch();
 
 //Schedule tasks to be run on the server.
 module.exports = () => {
-  cron.schedule(cronTime.everySundayAt(22, 30), async function() {
-    const epoch = await callTx(getEpoch);
+  cron.schedule(cronTime.everySundayAt(22, 35), async function() {
+    console.log("me comm")
+    // const epoch = await callTx(getEpoch);
 
-    const callback = (status, ...msg) => {
-      const title = status ? 
-        `Started Epoch ${+epoch+1} successfully` :
-        `Failed to start Epoch ${+epoch+1}`;
-      console.log(title, msg.join(" "));
-      sendEmail( title, msg.join(" ") );
-    }
+    // const callback = (status, ...msg) => {
+    //   const title = status ? 
+    //     `Started Epoch ${+epoch+1} successfully` :
+    //     `Failed to start Epoch ${+epoch+1}`;
+    //   console.log(title, msg.join(" "));
+    //   sendEmail( title, msg.join(" ") );
+    // }
 
-    await sendTx(startRound, callback);
+    // await sendTx(startRound, callback);
   });
 
   cron.schedule(cronTime.everySundayAt(23, 30), async function() {
