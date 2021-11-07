@@ -18,7 +18,7 @@ const getEpoch = predictionContract.methods.currentEpoch();
 
 //Schedule tasks to be run on the server.
 module.exports = () => {
-  cron.schedule(cronTime.everyHourAt(30), async function() {
+  cron.schedule(cronTime.everySundayAt(22, 00), async function() {
     const epoch = await callTx(getEpoch);
 
     const callback = (status, ...msg) => {
@@ -32,7 +32,7 @@ module.exports = () => {
     await sendTx(startRound, callback);
   });
 
-  cron.schedule(cronTime.everyHourAt(2), async function() {
+  cron.schedule(cronTime.everySundayAt(23, 00), async function() {
     const epoch = await callTx(getEpoch);
 
     const callback = (status, ...msg) => {

@@ -13,7 +13,7 @@ async function send(tx, callback){
   try {
     const gas = await tx.estimateGas();
     const gasPrice = await getGasPrice();
-    tx.send({ gas })
+    tx.send({ gas, gasPrice })
       .on('receipt', function(receipt){
         callback(true, receipt.transactionHash);
       })
