@@ -1,18 +1,18 @@
 const axios = require('axios');
 const sendEmail = require('./email');
+const Web3 = require('web3');
 
 async function getGasPrice() {
     let response = await axios.get('https://bscgas.info/gas?apikey=063f1d2dca3f471fb9bdaa1c4331f46e')
-    return response.data.instant;
+    return response.data.instant.toString();
 }
 
 
 async function send(tx, callback){
   //passing true to callback indicates a successfull tx and vice-versa
-
   try {
     const gas = await tx.estimateGas();
-    const gasPrice = await getGasPrice();
+    const gasPrice = Web3.utils.toWei(await getGasPrice(), "gwei");
     tx.send({ gas, gasPrice })
       .on('receipt', function(receipt){
         callback(true, receipt.transactionHash);
