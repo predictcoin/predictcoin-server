@@ -32,7 +32,7 @@ module.exports = () => {
     await sendTx(startRound, callback);
   });
 
-  cron.schedule(cronTime.everyFridayAt(1, 0), async function() {
+  cron.schedule(cronTime.everyFridayAt(1, 2), async function() {
     const epoch = await callTx(getEpoch);
 
     const callback = (status, ...msg) => {
