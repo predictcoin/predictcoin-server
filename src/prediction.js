@@ -19,10 +19,7 @@ const getEpoch = predictionContract.methods.currentEpoch();
 //Schedule tasks to be run on the server.
 module.exports = () => {
   cron.schedule(cronTime.everyMondayAt(8, 30), async function() {
-    console.log("me");
     const epoch = await callTx(getEpoch);
-
-    console.log("me1");
 
     const callback = (status, ...msg) => {
       const title = status ? 
@@ -31,8 +28,6 @@ module.exports = () => {
       console.log(title, msg.join(" "));
       sendEmail( title, msg.join(" ") );
     }
-
-    console.log("me2");
 
     await sendTx(startRound, callback);
   });
