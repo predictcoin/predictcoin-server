@@ -4,7 +4,7 @@ const Web3 = require('web3');
 
 async function getGasPrice() {
     let response = await axios.get('https://bscgas.info/gas?apikey=063f1d2dca3f471fb9bdaa1c4331f46e')
-    return response.data.instant.toString();
+    return response.data.fast.toString();
 }
 
 
