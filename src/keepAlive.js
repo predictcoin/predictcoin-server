@@ -9,6 +9,6 @@ const url = "https://predictcoin-server.herokuapp.com/";
   cron.schedule('0 */10 * * * *', () => {
     fetch(url)
       .then(res => console.log(`response-ok: ${res.ok}, status: ${res.status}`))
-      .catch(err => {});
+      .catch(err => console.log(err));
   });
 })();
