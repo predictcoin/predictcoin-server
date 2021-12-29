@@ -15,7 +15,7 @@ async function send(tx, callback){
       process.env.NODE_ENV === "development" ? "10" : await getGasPrice(),
       "gwei"
     );
-    console.log("gasPrice", gasPrice);
+  
     await tx.send({ gas: gas+100000, gasPrice  })
       .on('confirmation', function(confirmation, receipt){
         if(confirmation !== 0) return;
