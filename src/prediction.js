@@ -80,7 +80,7 @@ const scheduleEndRound = async () => {
 
 module.exports = () => {
   //schedule start round
-  cron.schedule(cronTime.every(2).minutes(), async function () {
+  cron.schedule(cronTime.everyMondayAt(13, 0), async function () {
     const epoch = await callTx(predictionContract.getEpoch);
     const callback = (status, ...msg) => {
       const title = status
