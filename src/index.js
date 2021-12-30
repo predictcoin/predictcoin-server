@@ -6,7 +6,7 @@ const operatePrediction = require("./prediction");
 require("./keepAlive");
 
 
-app = express();
+const app = express();
 
 operatePrediction();
 
