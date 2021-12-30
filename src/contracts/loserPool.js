@@ -5,10 +5,9 @@ const {
   addresses,
 } = require("../data");
 
+const NODE_ENV = process.env.NODE_ENV;
 const { LoserPool: loserPoolAddr } =
-  addresses[
-    process.env.NODE_ENV === "development" ? "BSC_TESTNET" : "BSC_MAINNET"
-  ];
+  addresses[NODE_ENV];
 
 const wallet = web3.eth.accounts.wallet;
 

@@ -2,7 +2,7 @@ const { web3 } = require("./config");
 const cron = require("node-cron");
 const cronTime = require("cron-time-generator");
 const { send: sendTx, call: callTx } = require("./transaction");
-// const sendEmail = require("./email");
+const sendEmail = require("./email");
 
 const { predictionContract, loserPoolContract, winnerPoolContract } = 
 require("./contracts");
@@ -10,11 +10,11 @@ require("./contracts");
 const poolCallback = (pool, epoch) => (status, ...msg) => {
   if(status){
     msg = `Added ${pool} pool for round ${epoch} successfully. ${msg.join(" ")}`;
-    //sendEmail(msg);
+    sendEmail(msg);
     console.log(msg);
   }else{
     msg = `Failed to add ${pool} pool for round ${epoch}. ${msg.join(" ")}`;
-    //sendEmail(msg);
+    sendEmail(msg);
     console.log(msg);
   }
 };
@@ -23,10 +23,10 @@ const predictionCallback = async (status, ...msg) => {
   const epoch = await callTx(predictionContract.getEpoch);
   if (epoch === 0) return;
   if (status) {
-    //sendEmail(`Ended Epoch ${epoch} successfully`, msg.join(" ") );
+    sendEmail(`Ended Epoch ${epoch} successfully`, msg.join(" ") );
     console.log(`Ended Epoch ${epoch} successfully`, msg.join(" "));
   } else {
-    //sendEmail(`Failed to end Epoch ${epoch}`, msg.join(" "));
+    sendEmail(`Failed to end Epoch ${epoch}`, msg.join(" "));
     console.log(`Failed to end Epoch ${epoch}`, msg.join(" "));
   }
 };
@@ -87,7 +87,7 @@ module.exports = () => {
         ? `Started Epoch ${+epoch + 1} successfully`
         : `Failed to start Epoch ${+epoch + 1}`;
       console.log(title, msg.join(" "));
-      //sendEmail( title, msg.join(" ") );
+      sendEmail( title, msg.join(" ") );
       if (status) scheduleEndRound();
     };
     console.log("starting round");
@@ -104,7 +104,6 @@ module.exports = () => {
     const endTime = round.endTimestamp + bufferSeconds;
 
     if (round.oraclesCalled === false) {
-      console.log(round.endTimestamp);
       if (round.endTimestamp*1000 > Date.now()) scheduleEndRound();
       else if(
         round.endTimestamp*1000 < Date.now() &&

@@ -6,9 +6,7 @@ const {
 } = require("../data");
 
 const { WinnerPool: winnerPoolAddr } =
-  addresses[
-    process.env.NODE_ENV === "development" ? "BSC_TESTNET" : "BSC_MAINNET"
-  ];
+  addresses[ process.env.NODE_ENV ];
 
 //init contracts
 const wallet = web3.eth.accounts.wallet;

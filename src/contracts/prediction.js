@@ -6,9 +6,7 @@ const {
 
 const {
   Prediction: predictionAddr,
-} = addresses[
-  process.env.NODE_ENV === "development" ? "BSC_TESTNET" : "BSC_MAINNET"
-];
+} = addresses[ process.env.NODE_ENV ];
 const wallet = web3.eth.accounts.wallet;
 
 const predictionContract = new web3.eth.Contract(
