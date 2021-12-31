@@ -6,7 +6,7 @@
   },
   "production": {
     "Prediction": "0xBf9C36E0852B62Ac730E6BA8EAa5022Ed97cBBE8",
-    "LoserPool": "0x0Dbe9A8C195613A28F128046b341F9501Cd004Bc",
+    "LoserPool": "0x5D83EF52661Baa67c9a7d60BF61b8339622603B6",
     "WinnerPool": "0x29C06EB1320BBc32A6891889A3dF56d8422f5406"
   },
   "staging": {
