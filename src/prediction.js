@@ -1,6 +1,6 @@
 const { web3 } = require("./config");
 const cron = require("node-cron");
-const cronTime = require("cron-time-generator");
+// const cronTime = require("cron-time-generator");
 const { send: sendTx, call: callTx } = require("./transaction");
 const sendEmail = require("./email");
 
@@ -9,12 +9,12 @@ require("./contracts");
 
 const poolCallback = (pool, epoch) => (status, ...msg) => {
   if(status){
-    msg = `Added ${pool} pool for round ${epoch} successfully. ${msg.join(" ")}`;
-    sendEmail(msg);
+    msg = `Added ${pool} pool for round ${epoch} successfully.`;
+    sendEmail(msg, msg.join(" "));
     console.log(msg);
   }else{
-    msg = `Failed to add ${pool} pool for round ${epoch}. ${msg.join(" ")}`;
-    sendEmail(msg);
+    msg = `Failed to add ${pool} pool for round ${epoch}.`;
+    sendEmail(msg, msg.join(" "));
     console.log(msg);
   }
 };
@@ -80,7 +80,8 @@ const scheduleEndRound = async () => {
 
 module.exports = () => {
   //schedule start round
-  cron.schedule(cronTime.everyMondayAt(13, 0), async function () {
+  // cron.schedule(cronTime.everyMondayAt(13, 0), 
+  const run = async function () {
     const epoch = await callTx(predictionContract.getEpoch);
     const callback = (status, ...msg) => {
       const title = status
@@ -93,8 +94,8 @@ module.exports = () => {
     console.log("starting round");
     await sendTx(predictionContract.startRound, callback);
   }
-  );
-  // run();
+  // );
+  run();
 
   //checks and schedules end round
   const checkPrediction = async () => {
