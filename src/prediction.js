@@ -1,6 +1,6 @@
 const { web3 } = require("./config");
 const cron = require("node-cron");
-// const cronTime = require("cron-time-generator");
+const cronTime = require("cron-time-generator");
 const { send: sendTx, call: callTx } = require("./transaction");
 const sendEmail = require("./email");
 
@@ -80,8 +80,7 @@ const scheduleEndRound = async () => {
 
 module.exports = () => {
   //schedule start round
-  // cron.schedule(cronTime.everyMondayAt(13, 0), 
-  const run = async function () {
+  cron.schedule(cronTime.everyMondayAt(13, 0),  async function () {
     const epoch = await callTx(predictionContract.getEpoch);
     const callback = (status, ...msg) => {
       const title = status
@@ -94,8 +93,7 @@ module.exports = () => {
     console.log("starting round");
     await sendTx(predictionContract.startRound, callback);
   }
-  // );
-  run();
+  );
 
   //checks and schedules end round
   const checkPrediction = async () => {
