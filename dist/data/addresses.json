@@ -1,0 +1,17 @@
+{
+    "development": {
+        "Prediction": "0xb021c3fFbA6E88802790603Ec96411F5b5BBF234",
+        "LoserPool": "0x8148A3348c593B746ECB019Cde9bb2a982fde569",
+        "WinnerPool": "0x85A71c3F2cF2Cc89a46C28f4b33feB2EBaed86bf"
+    },
+    "production": {
+        "Prediction": "0xBf9C36E0852B62Ac730E6BA8EAa5022Ed97cBBE8",
+        "LoserPool": "0x5D83EF52661Baa67c9a7d60BF61b8339622603B6",
+        "WinnerPool": "0x29C06EB1320BBc32A6891889A3dF56d8422f5406"
+    },
+    "staging": {
+        "Prediction": "0x3Ed511e509FaA2DB50f864cA71eFe8af1b366B34",
+        "LoserPool": "0xf7D256f46593c4695D11858d8D4089417652A86f",
+        "WinnerPool": "0xDe3a1Ab5a741819d672B3b24Ba2F1154179CF0B1"
+    }
+}
