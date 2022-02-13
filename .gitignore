@@ -3,4 +3,5 @@
 .env.production
 .env.staging
 .env.development
+dist
 node_modules
