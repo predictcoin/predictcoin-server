@@ -24,10 +24,11 @@ transporter.verify(function (error) {
 
 async function sendEmail (params: SendEmailParams) {
   const {title, body, receivers, sender} = params;
+  if (process.env.NODE_ENV !== "production") return;
   try {
     await transporter.sendMail({
       from: sender, // sender address
-      to: receivers,// list of receivers , 
+      to: receivers, // list of receivers , 
       subject: title,
       text: body
     });  
@@ -38,7 +39,7 @@ async function sendEmail (params: SendEmailParams) {
 
 const EmailClient: EmailClient = {
   sender: process.env.SENDER!,
-  recievers: process.env.RECEVERS?.split(",")!,
+  recievers: process.env.RECEIVERS?.split(",")!,
   send: sendEmail
 }
 

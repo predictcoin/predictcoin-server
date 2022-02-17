@@ -1,10 +1,10 @@
 import {send as sendTx, call as callTx, call} from "../../utils/transaction";
 import EmailController from "./Email";
 import { emailController } from "../../index";
-import { Round } from "../domain/BscPredict";
+import { Round } from "../domain/CrpPredict";
 import cron from "node-cron";
 import cronTime  from "cron-time-generator";
-import web3 from "../insfrastructure/BscWeb3";
+import web3 from "../insfrastructure/CrpWeb3";
 
 import { 
   startRound, 
@@ -13,18 +13,19 @@ import {
   getBufferSeconds,
   getIntervalSeconds,
   getCurrentRound
-} from "../usecases/BscPredict";
-import {BscPredict as _BscPredict} from "../domain/BscPredict";
+} from "../usecases/CrpPredict";
+import {CrpPredict as _CrpPredict} from "../domain/CrpPredict";
 import { destructureDate } from "../../utils/date";
-import PredictionPoolController from "./BscPredictionPools";
-import { loserPoolContract, winnerPoolContract } from "../insfrastructure/BscContracts";
+import PredictionPoolController from "./CrpPredictionPools";
+import { loserPoolContract, winnerPoolContract } from "../insfrastructure/CrpContracts";
+import getCrpTokenPrices from "../../utils/getCrpTokenPrices";
 
 
 const winnerPoolController = new PredictionPoolController(loserPoolContract);
 const loserPoolController = new PredictionPoolController(winnerPoolContract)
 
 class BscPredictController{
-  contract: _BscPredict;
+  contract: _CrpPredict;
   emailController: EmailController;
 
   private endCallback = async (status: boolean, ...msg: string[]) => {
@@ -54,17 +55,19 @@ class BscPredictController{
       if(status) this.scheduleEndRound();
     };
 
-  constructor(contract: _BscPredict){
+  constructor(contract: _CrpPredict){
     this.contract = contract;
     this.emailController = emailController
   }
 
   async startRound (){
-    await sendTx(startRound(this.contract), this.startCallback);
+    const {prices, tokens} = await getCrpTokenPrices();
+    await sendTx( startRound(this.contract, tokens, prices), this.startCallback);
   }
 
   async endRound (){
-    await sendTx(endRound(this.contract), this.endCallback);
+    const {prices, tokens} = await getCrpTokenPrices();
+    await sendTx( endRound(this.contract, tokens, prices), this.endCallback);
   }
 
   async getCurrentRound(): Promise<number>{
