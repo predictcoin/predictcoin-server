@@ -30,14 +30,15 @@ class BscPredictController{
   private endCallback = async (status: boolean, ...msg: string[]) => {
     const epoch = await this.getCurrentRound();
     if (epoch === 0) return;
-    console.log(status, epoch);
+    let title;
     if (status) {
-      emailController.send(`Ended Epoch ${epoch} successfully`, msg.join(" ") );
-      console.log(`Ended Epoch ${epoch} successfully`, msg.join(" "));
+      title = `Predictcoin: Ended Epoch ${epoch} successfully`;
     } else {
-      emailController.send(`Failed to end Epoch ${epoch}`, msg.join(" "));
-      console.log(`Failed to end Epoch ${epoch}`, msg.join(" "));
+      title = `Predictcoin: Failed to end Epoch ${epoch}`;
     }
+
+    console.log(title, msg.join(" "));
+    emailController.send(title, msg.join(" "));
     if(status === true){
       await winnerPoolController.addPool(epoch);
       await loserPoolController.addPool(epoch);
@@ -47,8 +48,8 @@ class BscPredictController{
   private startCallback = async (status:  boolean, ...msg: string[]) => {
       const epoch = await this.getCurrentRound();
       const title = status
-        ? `Started Epoch ${+epoch} successfully`
-        : `Failed to start Epoch ${+epoch}`;
+        ? `Predictcoin: Started Epoch ${+epoch} successfully`
+        : `Predictcoin: Failed to start Epoch ${+epoch+1}`;
       console.log(title, msg.join(" "));
       emailController.send( title, msg.join(" ") );
       if(status) this.scheduleEndRound();
@@ -86,14 +87,14 @@ class BscPredictController{
   async scheduleStartRound (): Promise<void> {
     const schedule = process.env.NODE_ENV === "production" 
       ? cronTime.everyMondayAt(13, 0) 
-      : cronTime.every(2).minutes();
+      : cronTime.every(6).minutes();
     cron.schedule(schedule,  async () => {
       await this.startRound();
     });
   }
 
   async scheduleEndRound (): Promise<void> {
-    console.log("Scheduling end round");
+    console.log("Predictcoin: Scheduling end round");
     const epoch = await this.getCurrentRound()
     const round = await this.getRound(epoch);
     const endTimestamp = round.endTimestamp;
@@ -119,7 +120,7 @@ class BscPredictController{
         timezone: "Europe/London",
       }
     );
-    console.log(`End round ${round.epoch} scheduled`, date);
+    console.log(`Predictcoin: End round ${round.epoch} scheduled`, date);
   };
 }
 

@@ -1,10 +1,10 @@
 import {send as sendTx, call as callTx, call} from "../../utils/transaction";
 import EmailController from "./Email";
 import { emailController } from "../../index";
-import { Round } from "../domain/CrpPredict";
+import { Round } from "../domain/CroPredict";
 import cron from "node-cron";
 import cronTime  from "cron-time-generator";
-import web3 from "../insfrastructure/CrpWeb3";
+import web3 from "../insfrastructure/CroWeb3";
 
 import { 
   startRound, 
@@ -13,11 +13,11 @@ import {
   getBufferSeconds,
   getIntervalSeconds,
   getCurrentRound
-} from "../usecases/CrpPredict";
-import {CrpPredict as _CrpPredict} from "../domain/CrpPredict";
+} from "../usecases/CroPredict";
+import {CroPredict as _CrpPredict} from "../domain/CroPredict";
 import { destructureDate } from "../../utils/date";
-import PredictionPoolController from "./CrpPredictionPools";
-import { loserPoolContract, winnerPoolContract } from "../insfrastructure/CrpContracts";
+import PredictionPoolController from "./CroPredictionPools";
+import { loserPoolContract, winnerPoolContract } from "../insfrastructure/CroContracts";
 import getCrpTokenPrices from "../../utils/getCrpTokenPrices";
 
 
@@ -31,14 +31,15 @@ class BscPredictController{
   private endCallback = async (status: boolean, ...msg: string[]) => {
     const epoch = await this.getCurrentRound();
     if (epoch === 0) return;
-    console.log(status, epoch);
+    let title;
     if (status) {
-      emailController.send(`Ended Epoch ${epoch} successfully`, msg.join(" ") );
-      console.log(`Ended Epoch ${epoch} successfully`, msg.join(" "));
+      title = `CroPredict: Ended Epoch ${epoch} successfully`;
     } else {
-      emailController.send(`Failed to end Epoch ${epoch}`, msg.join(" "));
-      console.log(`Failed to end Epoch ${epoch}`, msg.join(" "));
+      title = `CroPredict: Failed to end Epoch ${epoch}`;
     }
+
+    console.log(title, msg.join(" "));
+    emailController.send(title, msg.join(" "));
     if(status === true){
       await winnerPoolController.addPool(epoch);
       await loserPoolController.addPool(epoch);
@@ -48,8 +49,8 @@ class BscPredictController{
   private startCallback = async (status:  boolean, ...msg: string[]) => {
       const epoch = await this.getCurrentRound();
       const title = status
-        ? `Started Epoch ${+epoch} successfully`
-        : `Failed to start Epoch ${+epoch}`;
+        ? `CroPredict: Started Epoch ${+epoch} successfully`
+        : `CroPredict: Failed to start Epoch ${+epoch+1}`;
       console.log(title, msg.join(" "));
       emailController.send( title, msg.join(" ") );
       if(status) this.scheduleEndRound();
@@ -89,18 +90,19 @@ class BscPredictController{
   async scheduleStartRound (): Promise<void> {
     const schedule = process.env.NODE_ENV === "production" 
       ? cronTime.everyMondayAt(13, 0) 
-      : cronTime.every(2).minutes();
+      : cronTime.every(6).minutes();
+
     cron.schedule(schedule,  async () => {
       await this.startRound();
     });
+    // await this.startRound();
   }
 
   async scheduleEndRound (): Promise<void> {
-    console.log("Scheduling end round");
+    console.log("CroPredict: Scheduling end round");
     const epoch = await this.getCurrentRound()
     const round = await this.getRound(epoch);
-    const endTimestamp = round.endTimestamp;
-
+    const endTimestamp = round.closeTimestamp;
     const date = new Date(+endTimestamp * 1000);
 
     const { seconds, minutes, hour, monthDay, month, weekDay } =
@@ -115,14 +117,13 @@ class BscPredictController{
             break;
           }
         }
-
         await this.endRound();
       },
       {
         timezone: "Europe/London",
       }
     );
-    console.log(`End round ${round.epoch} scheduled`, date);
+    console.log(`CroPredict: End round ${round.epoch} scheduled`, date);
   };
 }
 

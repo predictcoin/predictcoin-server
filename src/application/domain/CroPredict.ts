@@ -3,7 +3,7 @@ import { CrpPrediction } from "../../contracts/CrpPrediction";
 export interface Round {
   epoch: string;
   startTimestamp: string;
-  endTimestamp: string;
+  closeTimestamp: string;
   totalAmount: string;
   oraclesCalled: boolean;
   _tokens: string[];
@@ -23,4 +23,4 @@ export interface Round {
   9: string[];
 }
 
-export interface CrpPredict extends CrpPrediction {};
+export interface CroPredict extends CrpPrediction {};

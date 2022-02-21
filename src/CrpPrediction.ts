@@ -1,27 +1,27 @@
 
 
-import BscPredictController from "./application/controllers/BscPredict";
-import { predictionContract } from "./application/insfrastructure/BscContracts";
+import CrpPredictController from "./application/controllers/CroPredict";
+import { predictionContract } from "./application/insfrastructure/CroContracts";
 
  
-const predictionController = new BscPredictController(predictionContract);
+const predictionController = new CrpPredictController(predictionContract);
 
 
-const BscPrediction = async () => {
+const CrpPrediction = async () => {
   //schedule start round
   const epoch = await predictionController.getCurrentRound();
   const round = await predictionController.getRound(epoch);
 
   // const bufferSeconds = await predictionController.getBufferSeconds();
   // const endTime = +round.closeTimestamp + bufferSeconds;
-  
-  console.log("Checking Bsc Prediction");
+
+  console.log("Checking Cro Prediction");
   if (round.oraclesCalled === false) {
-    if (+round.endTimestamp*1000 > Date.now()) 
+    if (+round.closeTimestamp*1000 > Date.now()) 
       predictionController.scheduleEndRound();
   }
   
   await predictionController.scheduleStartRound();
 };
 
-export default BscPrediction;
+export default CrpPrediction;

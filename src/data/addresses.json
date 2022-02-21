@@ -4,26 +4,26 @@
     "BscLoserPool": "0x8148A3348c593B746ECB019Cde9bb2a982fde569",
     "BscWinnerPool": "0x85A71c3F2cF2Cc89a46C28f4b33feB2EBaed86bf",
 
-    "CrpPrediction": "0x087a29a89fDae1Ff469Bae4518BCA9dE9fAeD13e",
-    "CrpLoserPool": "",
-    "CrpWinnerPool": ""
+    "CrpPrediction": "0xB09A1F4ee02a803A6c618aBd7e5F791ca8D9b936",
+    "CrpLoserPool": "0xe6811535123458AE70cd0e0e3a19D3cc94bA8a7b",
+    "CrpWinnerPool": "0x4d616250B31e23fbC5D87c46Bf3ec674131D7E50"
   },
-  "prBscoduction": {
+  "production": {
     "BscPrediction": "0xBf9C36E0852B62Ac730E6BA8EAa5022Ed97cBBE8",
     "BscLoserPool": "0x5D83EF52661Baa67c9a7d60BF61b8339622603B6",
     "BscWinnerPool": "0x29C06EB1320BBc32A6891889A3dF56d8422f5406",
 
-    "CrpPrediction": "",
-    "CrpLoserPool": "",
-    "CrpWinnerPool": ""
+    "CrpPrediction": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "CrpLoserPool": "0xd9b4dD2b4dB9af58298593ef0709CE89fD8c154d",
+    "CrpWinnerPool": "0xE91769d9bc4af9301d186b8834ea59f54BA41dE2"
   },
   "staging": {
     "BscPrediction": "0x3Ed511e509FaA2DB50f864cA71eFe8af1b366B34",
     "BscLoserPool": "0xf7D256f46593c4695D11858d8D4089417652A86f",
     "BscWinnerPool": "0xDe3a1Ab5a741819d672B3b24Ba2F1154179CF0B1",
 
-    "CrpPrediction": "",
-    "CrpLoserPool": "",
-    "CrpWinnerPool": ""
+    "CrpPrediction": "0x3b4BA9C354376e16a36535Be332CED5a03cE1256",
+    "CrpLoserPool": "0x08Fd84D1f574Fe8d4b0425940DE40B844a679D7A",
+    "CrpWinnerPool": "0x1eE1e446851609E535f0081904238356b03f72A4"
   }
 }

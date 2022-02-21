@@ -1,21 +1,21 @@
-import { _BscLoserPool, _BscWinnerPool } from "../domain/BscPredictionPools";
+import { _CroLoserPool, _CroWinnerPool } from "../domain/CroPredictionPools";
 import {send as sendTx, call as callTx, call} from "../../utils/transaction";
-import { addPool } from "../usecases/BscPredictionPools";
+import { addPool } from "../usecases/CroPredictionPools";
 import { emailController } from "../..";
 
 class PredictionPoolController {
-  contract: _BscLoserPool | _BscWinnerPool;
+  contract: _CroLoserPool | _CroWinnerPool;
 
   private callback = (round: string | number) => 
     async (status:  boolean, ...msg: string[]) => {
       const title = status
-        ? `Predictcoin: Added pool ${round} to ${"BID" in this.contract.methods ? "loser": "winner"} pool`
-        : `Predictcoin: Failed to add pool ${round} to ${"BID" in this.contract.methods ? "loser": "winner"} pool`;
+        ? `CroPredict: Added pool ${round} to ${"rewardToken" in this.contract.methods ? "loser": "winner"} pool`
+        : `CroPredict: Failed to add pool ${round} to ${"rewardToken" in this.contract.methods ? "loser": "winner"} pool`;
       console.log(title, msg.join(" "));
       emailController.send( title, msg.join(" ") );
     };
   
-  constructor(contract : _BscLoserPool | _BscWinnerPool){
+  constructor(contract : _CroLoserPool | _CroWinnerPool){
     this.contract = contract;
   }
 

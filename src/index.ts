@@ -7,6 +7,7 @@ import keepAlive from "./utils/keepAlive";
 import EmailController from "./application/controllers/Email";
 import EmailClient from "./application/insfrastructure/Email";
 import BscPrediction from "./BscPrediction";
+import CrpPrediction from "./CrpPrediction";
 
 // setup server needs
 
@@ -23,5 +24,6 @@ app.listen(process.env.PORT || 3000);
 
 // start predictions
 BscPrediction();
+CrpPrediction();
 
 export { emailController}; 
