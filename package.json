@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "typechain:generate": "typechain --target web3-v1 --out-dir src/contracts 'src/data/abis/*.json'",
-    "start": "npm run typechain:generate && tsc && node dist/index.js"
+    "dev": "npm run typechain:generate && tsc && node dist/index.js",
+    "build": "npm run typechain:generate && tsc && node dist/index.js",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
