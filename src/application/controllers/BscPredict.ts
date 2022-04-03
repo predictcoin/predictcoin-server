@@ -109,7 +109,8 @@ class BscPredictController{
       async () => {
         for (;;) {
           const block = await web3.eth.getBlock("pending");
-          if (block.timestamp >= +endTimestamp) {
+          // added 10 seconds to account for blockchain time
+          if (block.timestamp >= +endTimestamp+10) {
             break;
           }
         }
