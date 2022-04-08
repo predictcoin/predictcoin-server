@@ -41,8 +41,14 @@ class BscPredictController{
     console.log(title, msg.join(" "));
     emailController.send(title, msg.join(" "));
     if(status === true){
-      await winnerPoolController.addPool(epoch);
-      await loserPoolController.addPool(epoch);
+      // added pools after 10 seconds to account for slow node update
+      setTimeout(
+        async () => {
+          await winnerPoolController.addPool(epoch);
+          await loserPoolController.addPool(epoch);
+        },
+        10000
+      )
     }
   };
 
