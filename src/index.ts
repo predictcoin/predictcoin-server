@@ -1,6 +1,7 @@
 //imports
-import express from "express";
+import express, { response } from "express";
 import dotenv from 'dotenv';
+var cors = require('cors')
 dotenv.config();
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 import keepAlive from "./utils/keepAlive";
@@ -19,6 +20,8 @@ keepAlive();
 const emailController = new EmailController(EmailClient);
 
 const app = express();
+app.use(cors());
+
 app.get('/', function (req, res) {
   res.send('hello world')
 });
