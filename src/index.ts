@@ -1,5 +1,5 @@
 //imports
-import express from "express";
+import express, { response } from "express";
 import dotenv from 'dotenv';
 dotenv.config();
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
@@ -8,6 +8,7 @@ import EmailController from "./application/controllers/Email";
 import EmailClient from "./application/insfrastructure/Email";
 import BscPrediction from "./BscPrediction";
 import CrpPrediction from "./CrpPrediction";
+import {callFootballApi} from "./utils/footballApi"
 
 // setup server needs
 
@@ -17,13 +18,29 @@ keepAlive();
 const emailController = new EmailController(EmailClient);
 
 const app = express();
+
 app.get('/', function (req, res) {
   res.send('hello world')
 });
+
+app.get('/football-api', async function(req, res){
+  let response;
+  try{
+    response = await callFootballApi(req);
+    if(response.status !== 200) throw new Error((response.data as {message: string}).message);
+    res.status(response.status).send(response.data);
+  }catch(error){
+    // @ts-ignore
+    console.error(error.message);
+    // @ts-ignore
+    res.status(response.status).send(error.message);
+  }
+});
+
 app.listen(process.env.PORT || 3000);
 
 // start predictions
-BscPrediction();
-CrpPrediction();
+// BscPrediction();
+// CrpPrediction();
 
 export { emailController}; 
