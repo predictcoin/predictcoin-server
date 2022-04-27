@@ -39,6 +39,7 @@ app.get('/football-api', async function(req, res){
     res.status(response.status).send(error.message);
   }
 });
+
 app.listen(process.env.PORT || 3000);
 
 // start predictions
