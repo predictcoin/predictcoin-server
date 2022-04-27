@@ -6,7 +6,9 @@
 
     "CrpPrediction": "0xB09A1F4ee02a803A6c618aBd7e5F791ca8D9b936",
     "CrpLoserPool": "0xe6811535123458AE70cd0e0e3a19D3cc94bA8a7b",
-    "CrpWinnerPool": "0x4d616250B31e23fbC5D87c46Bf3ec674131D7E50"
+    "CrpWinnerPool": "0x4d616250B31e23fbC5D87c46Bf3ec674131D7E50",
+    
+    "CroSportsOracle": ""
   },
   "production": {
     "BscPrediction": "0xBf9C36E0852B62Ac730E6BA8EAa5022Ed97cBBE8",

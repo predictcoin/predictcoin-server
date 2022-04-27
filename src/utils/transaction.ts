@@ -18,6 +18,8 @@ async function send(tx: any, callback?: (...param:any) => any){
   }
   catch(error:any) {
     callback && callback(false, error.message);
+    console.error(error.message);
+    throw(error);
   }
 }
 
@@ -26,8 +28,9 @@ async function call( tx:any ){
     const res = await tx.call()
     return res;
   }
-  catch(error){
-    return error;
+  catch(error:any){
+    console.error(error.message);
+    throw(error);
   }
 }
 

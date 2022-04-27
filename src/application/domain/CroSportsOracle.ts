@@ -3,13 +3,14 @@ import { CroSportOracle as _SportOracle } from "../../contracts/CroSportOracle";
 export interface CroSportOracle extends _SportOracle{};
 
 export interface CroSportEvent {
-    teamA: string,
-    teamB: string,
-    league: string,
-    round: string,
-    startTimestamp: number | string,
-    endTimestamp: number | string,
-    season: number | string
+    _eventId?: string,
+    _teamA: string,
+    _teamB: string,
+    _league: string,
+    _round: string,
+    _startTimestamp: number | string,
+    _endTimestamp: number | string,
+    _season: number | string
 }
 
 export interface CroUpdateEvent {

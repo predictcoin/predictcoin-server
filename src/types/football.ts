@@ -22,7 +22,7 @@ export type Status =
 export interface League {
   id: number,
   name: string,
-  country: string,
+  type?: string,
   logo: string
 }
 
@@ -66,8 +66,10 @@ export interface Team {
   logo: string,
 }
 
-export interface FixtureTeam extends Team {
-  winner: boolean
+export interface FixtureTeam {
+  id: number,
+  name: string,
+  winner: boolean | null
 }
 
 export interface Goals  {
