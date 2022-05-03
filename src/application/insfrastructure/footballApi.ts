@@ -1,7 +1,8 @@
 import axios, { AxiosRequestConfig } from "axios";
+import { time } from "console";
 import {Request} from "express";
-import { getMockFixtureWithId, getMockFixtureWithTeamId, getMockUpcomingMatches, mockLeague, mockTeams } from "../mock/football";
-import { Country, Fixture, FixtureLeague, FixtureTeam, Goals, League, Score, Season, Status, Team } from "../types/football";
+import { getMockFixtureWithId, getMockFixtureWithTeamId, getMockUpcomingMatches, mockLeague, mockTeams } from "../../mock/football";
+import { Country, Fixture, FixtureLeague, FixtureTeam, Goals, League, Score, Season, Status, Team } from "../../types/football";
 import { call } from "./transaction";
 
 const rapidKey = process.env.RAPID_API_KEY;
@@ -15,14 +16,14 @@ const footballApi = axios.create({
 });
 
 
-const handleCall = <T>(call: (...param: any)=> T) => {
+const handleCall = <T>(call: (..._: any)=> T) => {
   return async (...params:any) => {
     try{
-      const result = await call()
+      const result = await call(...params)
       return result;
     }catch(error){
-      console.warn((error as any).message)
-      throw(error)
+      console.warn((error as any).message);
+      throw new Error((error as any).message);
     }
   }
 }
@@ -61,7 +62,7 @@ export const getLeague = handleCall(async(name: string): Promise<{league: League
 })
 
 export const getLeagues = handleCall(async (): Promise<{league: League, country: Country, seasons: Season[]}[]> => {
-  if(process.env.NODE_ENV === "development") return [mockLeague];
+  if(process.env.NODE_ENV === "development") return [JSON.parse(JSON.stringify(mockLeague))];
   const {data} = await callFootballApi({query: {url: "/leagues"}})
   return (data as any).response
 })
@@ -72,20 +73,20 @@ export const getTeam = handleCall(async(name: string): Promise<{team: Team}> => 
   return (data as any).response;
 })
 
-export const getFixture = handleCall(async(team: number, league: number, season: number, round: string, date: string)
+export const getFixture = handleCall(async(team: number, league: number, season: number, round: string, date: string, timestamp?: number)
   : Promise<
     {fixture: Fixture, league: FixtureLeague, teams: { home:FixtureTeam, away:FixtureTeam }, goals: Goals, score: Score}[]
   > => {
-    if(process.env.NODE_ENV === "development") return [getMockFixtureWithTeamId(team)];
+    if(process.env.NODE_ENV === "development" && timestamp) return [getMockFixtureWithTeamId(team, timestamp) ];
     const {data} = await callFootballApi({query: {url: "/fixtures", team, league, season, round, date}})
     return (data as any).response;
 })
 
-export const getFixtureWithId = handleCall(async(id: number)
+export const getFixtureWithId = handleCall(async(id: number, timestamp?: number)
   : Promise<
     {fixture: Fixture, league: FixtureLeague, teams: { home:FixtureTeam, away:FixtureTeam }, goals: Goals, score: Score}[]
   > => {
-    if(process.env.NODE_ENV === "development") return [getMockFixtureWithId(id)];
+    if(process.env.NODE_ENV === "development" && timestamp) return [getMockFixtureWithId(id, timestamp)];
     const {data} = await callFootballApi({query: {url: "/fixtures", id}})
     return (data as any).response;
 })

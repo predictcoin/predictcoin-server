@@ -1,4 +1,4 @@
-import {send as sendTx, call as callTx, call} from "../../utils/transaction";
+import {send as sendTx, call as callTx, call} from "../insfrastructure/transaction";
 import EmailController from "./Email";
 import { emailController } from "../../index";
 import { Round } from "../domain/CroPredict";

@@ -1,3 +1,7 @@
+import { time, timeStamp } from "console"
+import web3 from "../application/insfrastructure/CroWeb3"
+import { matchTime, playPeriod } from "../data/football/variables"
+
 export const mockUpcomingMatches = [
         {
             "fixture": {
@@ -17,7 +21,7 @@ export const mockUpcomingMatches = [
                 },
                 "status": {
                     "long": "Not Started",
-                    "short": "NS",
+                    "short": "FT",
                     "elapsed": 90
                 }
             },
@@ -54,8 +58,8 @@ export const mockUpcomingMatches = [
                     "away": null
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 1
                 },
                 "extratime": {
                     "home": null,
@@ -85,7 +89,7 @@ export const mockUpcomingMatches = [
                 },
                 "status": {
                     "long": "Not Started",
-                    "short": "NS",
+                    "short": "FT",
                     "elapsed": 90
                 }
             },
@@ -122,8 +126,8 @@ export const mockUpcomingMatches = [
                     "away": null
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 1,
+                    "away": 1
                 },
                 "extratime": {
                     "home": null,
@@ -153,7 +157,7 @@ export const mockUpcomingMatches = [
                 },
                 "status": {
                     "long": "Not Started",
-                    "short": "NS",
+                    "short": "FT",
                     "elapsed": 90
                 }
             },
@@ -190,8 +194,8 @@ export const mockUpcomingMatches = [
                     "away": null
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 3,
+                    "away": 0
                 },
                 "extratime": {
                     "home": null,
@@ -221,7 +225,7 @@ export const mockUpcomingMatches = [
                 },
                 "status": {
                     "long": "Not Started",
-                    "short": "NS",
+                    "short": "FT",
                     "elapsed": 90
                 }
             },
@@ -258,8 +262,8 @@ export const mockUpcomingMatches = [
                     "away": null
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 7,
+                    "away": 0
                 },
                 "extratime": {
                     "home": null,
@@ -289,7 +293,7 @@ export const mockUpcomingMatches = [
                 },
                 "status": {
                     "long": "Not Started",
-                    "short": "NS",
+                    "short": "FT",
                     "elapsed": 90
                 }
             },
@@ -326,8 +330,8 @@ export const mockUpcomingMatches = [
                     "away": null
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 9,
+                    "away": 5
                 },
                 "extratime": {
                     "home": null,
@@ -357,7 +361,7 @@ export const mockUpcomingMatches = [
                 },
                 "status": {
                     "long": "Not Started",
-                    "short": "NS",
+                    "short": "FT",
                     "elapsed": 90
                 }
             },
@@ -394,8 +398,8 @@ export const mockUpcomingMatches = [
                     "away": null
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 4,
+                    "away": 2
                 },
                 "extratime": {
                     "home": null,
@@ -1182,13 +1186,18 @@ export const getMockUpcomingMatches = (date: string) => {
     if(_date === date){
         let matches = mockUpcomingMatches.slice(0,3);
         matches = matches.map(match => {
-            const timestamp = Math.trunc(new Date().getTime()/1000) + 60;
-
-            match.fixture.timestamp = Math.trunc(Math.random()*8*60) + timestamp;
+            const timestamp = Math.trunc(new Date().getTime()/1000);
+            const eventId = web3.utils.soliditySha3(
+                match.teams.home.name, match.teams.away.name, match.league.name, match.league.round,  
+                {type: "uint16", value: String(match.league.season)},
+                timestamp
+            )!;
+        
+            match.fixture.timestamp = Math.round(Math.random() * (playPeriod - matchTime)) + timestamp;
             match.fixture.periods.first = match.fixture.timestamp;
             match.fixture.periods.second = match.fixture.timestamp + 1*60;
-            fixtureTime[match.fixture.id] = match.fixture.periods;
-
+            fixtureTime[eventId] = match.fixture.periods;
+            
             return match;
         })
 
@@ -1197,12 +1206,17 @@ export const getMockUpcomingMatches = (date: string) => {
     else{
         let matches = mockUpcomingMatches.slice(3,6);
         matches = matches.map(match => {
-            const timestamp = Math.trunc(new Date().getTime()/1000) + 10*60;
+            const timestamp = Math.trunc(new Date().getTime()/1000) + playPeriod;
+                const eventId = web3.utils.soliditySha3(
+                match.teams.home.name, match.teams.away.name, match.league.name, match.league.round,  
+                {type: "uint16", value: String(match.league.season)},
+                timestamp
+            )!;
 
-            match.fixture.timestamp = Math.trunc(Math.random()*8*60) + timestamp;
+            match.fixture.timestamp = Math.trunc(Math.random()* playPeriod - matchTime) + timestamp;
             match.fixture.periods.first = match.fixture.timestamp;
             match.fixture.periods.second = match.fixture.timestamp + 1*60;
-            fixtureTime[match.fixture.id] = match.fixture.periods;
+            fixtureTime[eventId] = match.fixture.periods;
 
             return match;
         })
@@ -1212,16 +1226,40 @@ export const getMockUpcomingMatches = (date: string) => {
 
 }
 
-export const getMockFixtureWithTeamId = (id: number) => {
-    return mockUpcomingMatches.filter(match => {
+export const getMockFixtureWithTeamId = (id: number, timestamp: number) => {
+    const fixture = {...mockUpcomingMatches.filter(match => {
         return match.teams.away.id === id
             || match.teams.home.id === id
-    })[0]
+    })[0]};
+    fixture.fixture = {...fixture.fixture};
+    fixture.fixture.timestamp = timestamp;
+    fixture.fixture.periods.first = timestamp;
+    
+    console.log(timestamp+matchTime, Math.trunc(new Date().getTime()/1000));
+
+    if(timestamp+matchTime <= Math.trunc(new Date().getTime()/1000)){
+        fixture.fixture.status.short = "FT";
+    } else {
+        fixture.fixture.status.short = "NS";
+    }
+    return fixture;
 }
 
-export const getMockFixtureWithId = (id: number) => {
-    return mockUpcomingMatches.filter(match => {
+export const getMockFixtureWithId = (id: number, timestamp: number) => {
+    const fixture = {...mockUpcomingMatches.filter(match => {
         return match.fixture.id === id
-    })[0]
+    })[0]};
+    fixture.fixture = {...fixture.fixture};
+    fixture.fixture.timestamp = timestamp;
+    fixture.fixture.periods.first = timestamp;
+
+    console.log(timestamp+matchTime, Math.trunc(new Date().getTime()/1000));
+
+    if(timestamp+matchTime <= Math.trunc(new Date().getTime()/1000)){
+        fixture.fixture.status.short = "FT";
+    } else {
+        fixture.fixture.status.short = "NS";
+    }
+    return fixture;
 }
 

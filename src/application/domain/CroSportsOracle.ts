@@ -3,24 +3,33 @@ import { CroSportOracle as _SportOracle } from "../../contracts/CroSportOracle";
 export interface CroSportOracle extends _SportOracle{};
 
 export interface CroSportEvent {
-    _eventId?: string,
-    _teamA: string,
-    _teamB: string,
-    _league: string,
-    _round: string,
-    _startTimestamp: number | string,
-    _endTimestamp: number | string,
-    _season: number | string
+    id: string,
+    teamA: string,
+    teamB: string,
+    league: string,
+    round: string,
+    startTimestamp: number | string,
+    endTimestamp: number | string,
+    season: number | string,
+    outcome: EventOutcome
 }
 
+export type InitialCroSportEvent = Omit<CroSportEvent, "id" | "outcome">;
+
 export interface CroUpdateEvent {
-  _eventId: string,
-  _startTimestamp: number | string,
-  _endTimestamp: number | string,
+  id: string,
+  startTimestamp: number | string,
+  endTimestamp: number | string,
 }
 
 export interface CroDeclareEvent {
-  _eventId: string,
-  _scoreA: number,
-  _scoreB: number,
+  id: string,
+  scoreA: number,
+  scoreB: number,
+}
+
+export enum EventOutcome {
+  Pending,    // match has not been fought to decision
+  Decided,    // match has been finally Decided 
+  Cancelled   // match was cancelled
 }
