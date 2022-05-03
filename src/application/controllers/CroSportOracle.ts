@@ -11,7 +11,18 @@ import { formatEvents } from "../../utils/format";
 import { currentTimestamp, destructureDate } from "../../utils/date";
 import delay from "delay";
 import { dailyMatches, matchTime, playPeriod } from "../../data/football/variables";
+import { stat } from "fs/promises";
 
+
+const runSendTx =  async (tx: (_:any) => Promise<void>) => {
+  for( let i = 0; i < 10 ; i++){
+    let status = false;
+    const receiveStatus = (_status: boolean) => {status = _status };
+    await tx(receiveStatus);
+    // @ts-ignore
+    if(status === true) break;
+  }   
+}
 
 class CroSportOracleController {
   contract : CroSportOracle;
@@ -54,20 +65,22 @@ class CroSportOracleController {
           let declared = false;
           console.log("running");
           for(let i = 0; i<40 && !declared; i++){
-            const _fixture = (await getFixtureWithId(fixture.fixture.id, event.startTimestamp))[0];
-            const {teams, score} = _fixture;
-            if( endedStatuses.indexOf(_fixture.fixture.status.short) > -1 ){
-              console.log("b");
+            const fixtures = (await getFixtureWithId(fixture.fixture.id, event.startTimestamp));
+            if(!fixtures || fixtures.length === 0) continue;
+            const _fixture = fixtures[0];
 
-              const currentEventState: CroSportEvent = (await callTx(getEvents(this.contract, [event.id])))[0];
+            const {teams, score} = _fixture;
+            const currentEventStates: CroSportEvent[] = (await callTx(getEvents(this.contract, [event.id])));
+            if( !currentEventStates || currentEventStates.length === 0) continue;
+            const currentEventState = currentEventStates[0];
+
+            if( endedStatuses.indexOf(_fixture.fixture.status.short) > -1 ){
 
               if(+currentEventState.outcome === EventOutcome.Pending){
-                console.log("i")
                 if((score.fulltime.home !== null 
                   && score.fulltime.away !== null) 
                   && +(await web3.eth.getBlock("pending")).timestamp >= +event.endTimestamp + 30
                 ){
-                  console.log("a")
                   await this.declareOutcomes([
                   {
                     id: event.id,
@@ -78,15 +91,19 @@ class CroSportOracleController {
                 }
               
             } else if( cancelledStatuses.indexOf(fixture.fixture.status.short) > -1 ){
-              const currentEventState: CroSportEvent = (await callTx(getEvents(this.contract, [event.id])))[0];
+              
               if(currentEventState.outcome === EventOutcome.Pending){
                 await this.cancelEvents([event.id]);
               }
             }
 
-            const currentEventState: CroSportEvent = (await callTx(getEvents(this.contract, [event.id])))[0];
-            if(+currentEventState.outcome !== EventOutcome.Pending) declared = true;
-
+            const _currentEventStates: CroSportEvent[] = (await callTx(getEvents(this.contract, [event.id])));
+            if( !currentEventStates || currentEventStates.length === 0) continue;
+            const _currentEventState = _currentEventStates[0];
+            if(+_currentEventState.outcome !== EventOutcome.Pending) declared = true;
+            if(declared === true || i === 29){
+              this.watchedEvents.delete(event.id);
+            }
             // delay for 3 minutes
             (process.env.NODE_ENV === "development") ? await delay(10000) :  await delay(60000 * 3);
           }
@@ -106,8 +123,8 @@ class CroSportOracleController {
     const upcomingEvents: CroSportEvent[] = formatEvents(await callTx(getUpcomingEvents(this.contract)));
     const liveEvents: CroSportEvent[] = formatEvents(await callTx(getLiveEvents(this.contract)));
     upcomingEvents.push(...liveEvents);
-    const cancelledEvents = [];
-    const endedEvents = [];
+    const cancelledEvents: string[] = [];
+    const endedEvents: { id: string; scoreA: number; scoreB: number; }[] = [];
     const eventsToWatch = [];
 
     for(let i = 0; i<upcomingEvents.length; i++){
@@ -137,28 +154,46 @@ class CroSportOracleController {
       }
     }
 
-    if(cancelledEvents.length>1){ await this.cancelEvents(cancelledEvents) };
-    if(endedEvents.length>1){ await this.declareOutcomes(endedEvents) };
+    if(cancelledEvents.length>1){ 
+      await runSendTx(
+        async (callback: (_:boolean)=> void) => 
+          await this.cancelEvents(cancelledEvents, callback)
+      )
+    };
+    if(endedEvents.length>1){ 
+      await runSendTx(
+        async (callback: (_:boolean)=> void) => 
+          await this.declareOutcomes(endedEvents, callback)
+      )
+    };
     if(eventsToWatch.length>1){ await this.watchEvents(eventsToWatch) };
   }
 
-  async declareOutcomes(events: {id: string, scoreA: number, scoreB: number}[]){
+  async declareOutcomes(events: {id: string, scoreA: number, scoreB: number}[], 
+    callback?: (...params: any[]) => any
+  ){
     await sendTx(declareOutcomes(this.contract, events),
-      (status: boolean, message) => status 
-        ? console.log(`Declared events: ${events.map((e) => e.id).join(", ")}. Txhash: ${message}`)
-        : console.log(`Failed to declare events: ${events.map((e) => e.id).join(", ")}. ${message}`)
+      (status: boolean, message) => {
+        status 
+          ? console.log(`Declared events: ${events.map((e) => e.id).join(", ")}. Txhash: ${message}`)
+          : console.log(`Failed to declare events: ${events.map((e) => e.id).join(", ")}. ${message}`)
+        callback && callback(status);
+      }
     )
   }
 
-  async cancelEvents(events: string[]){
+  async cancelEvents(events: string[], callback?: (...params: any[]) => any){
     await sendTx(cancelSportEvents(this.contract, events), 
-      (status: boolean, message) => status 
-        ? console.log(`Canceled events: ${events.join(", ")}. Txhash: ${message}`)
-        : console.log(`Failed to cancel events: ${events.join(", ")}. ${message}`)
+      (status: boolean, message) => {
+        status 
+          ? console.log(`Canceled events: ${events.join(", ")}. Txhash: ${message}`)
+          : console.log(`Failed to cancel events: ${events.join(", ")}. ${message}`);
+        callback && callback(status);
+      }
     );
   }
 
-  async addNewEvents(length: number, from: string, to: string){
+  async addNewEvents(length: number, from: string, to: string, callback?: (...params: any[]) => any){
     const _leagues = await getLeagues();
     let leagueData : {season: number | undefined, leagueId: number}[] = _leagues.map( ({league, seasons}) => (
       {leagueId: league.id, season: seasons[seasons.length-1].current ? seasons.pop()?.year : undefined})
@@ -188,7 +223,7 @@ class CroSportOracleController {
     for(let i = 0; i < leagueData.length && upcomingMatches.length < length; i++){
       const {leagueId, season} = leagueData[i];
       const matches = await getUpcomingMatches(from, to, leagueId, season);
-      console.log("before mapping");
+
       // @ts-ignore
       let _matches: InitialCroSportEvent[] = ( 
         await Promise.all( 
@@ -213,7 +248,6 @@ class CroSportOracleController {
           })
         )
       ).filter(match => match !== undefined);
-      console.log("after mapping");
       
       _matches = (_matches);
       upcomingMatches = [...upcomingMatches, ..._matches];
@@ -222,9 +256,12 @@ class CroSportOracleController {
     upcomingMatches = upcomingMatches.slice(0, length);
     await sendTx(
       addSportEvents(this.contract, upcomingMatches), 
-      (status: boolean, message) => status 
-        ? console.log(`Added events for ${from}. Txhash: ${message}`)
-        : console.log(`Failed to add events. ${message}`)
+      (status: boolean, message) => {
+        status 
+          ? console.log(`Added events for ${from}. Txhash: ${message}`)
+          : console.log(`Failed to add events. ${message}`);
+        callback && callback(status);
+      }
     );
   }
 
@@ -233,25 +270,29 @@ class CroSportOracleController {
     const addEvents = async () => {
       console.log("adding")
       const upcomingEvents: CroSportEvent[] = formatEvents(await callTx(getUpcomingEvents(this.contract)));
-
       // add events for today
       let date = new Date();
       let from = date.toISOString().split('T')[0];
       let present1 = false, present2 = false;
       console.log("adding 2")
+
       for(let i =0; i < upcomingEvents.length; i++){
         const event = upcomingEvents[i];
           if( process.env.NODE_ENV === "development" ) {
             const time = currentTimestamp();
-            if(!present1) present1 = +event.startTimestamp > time && event.startTimestamp < time + playPeriod;
-            continue;
+            present1 = +event.startTimestamp > time && event.startTimestamp < time + playPeriod;
+          }else{
+            present1 = new Date(event.startTimestamp).toISOString().split('T')[0] === from
           }
-          if(!present1) present1 = new Date(event.startTimestamp).toISOString().split('T')[0] === from
+          
+          if (present1) break;
       }
-
       console.log(present1);
       
-      if(!present1) await this.addNewEvents(length, from, from);
+      if(!present1) {
+        await runSendTx(async (callback) => await this.addNewEvents(length, from, from, callback));
+      }
+
 
       // add events for tomorrow
       date.setDate(date.getDate() + 1);
@@ -261,15 +302,18 @@ class CroSportOracleController {
         const event = upcomingEvents[i];
         if( process.env.NODE_ENV === "development" ) {
             const time = currentTimestamp() + playPeriod;
-            if(!present2) present2 = +event.startTimestamp > time && event.startTimestamp < time + playPeriod*2;
-            continue;
+            present2 = +event.startTimestamp > time && event.startTimestamp < time + playPeriod*2;
+          }else {
+            present2 = new Date(event.startTimestamp).toISOString().split('T')[0] === from
           }
-          
-        if(!present2) present2 = new Date(event.startTimestamp).toISOString().split('T')[0] === from
+
+          if (present2) break;
       };
       console.log(present2);
 
-      if(!present2) await this.addNewEvents(length, from, from);
+      if(!present2) {
+        await runSendTx(async (callback) => await this.addNewEvents(length, from, from, callback));
+      }
     };
     
     
