@@ -1234,8 +1234,6 @@ export const getMockFixtureWithTeamId = (id: number, timestamp: number) => {
     fixture.fixture = {...fixture.fixture};
     fixture.fixture.timestamp = timestamp;
     fixture.fixture.periods.first = timestamp;
-    
-    console.log(timestamp+matchTime, Math.trunc(new Date().getTime()/1000));
 
     if(timestamp+matchTime <= Math.trunc(new Date().getTime()/1000)){
         fixture.fixture.status.short = "FT";
@@ -1252,8 +1250,6 @@ export const getMockFixtureWithId = (id: number, timestamp: number) => {
     fixture.fixture = {...fixture.fixture};
     fixture.fixture.timestamp = timestamp;
     fixture.fixture.periods.first = timestamp;
-
-    console.log(timestamp+matchTime, Math.trunc(new Date().getTime()/1000));
 
     if(timestamp+matchTime <= Math.trunc(new Date().getTime()/1000)){
         fixture.fixture.status.short = "FT";
