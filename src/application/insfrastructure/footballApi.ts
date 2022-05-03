@@ -1,9 +1,7 @@
-import axios, { AxiosRequestConfig } from "axios";
-import { time } from "console";
+import axios from "axios";
 import {Request} from "express";
 import { getMockFixtureWithId, getMockFixtureWithTeamId, getMockUpcomingMatches, mockLeague, mockTeams } from "../../mock/football";
 import { Country, Fixture, FixtureLeague, FixtureTeam, Goals, League, Score, Season, Status, Team } from "../../types/football";
-import { call } from "./transaction";
 
 const rapidKey = process.env.RAPID_API_KEY;
 
