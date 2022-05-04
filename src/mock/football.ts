@@ -1226,10 +1226,10 @@ export const getMockUpcomingMatches = (date: string) => {
 
 }
 
-export const getMockFixtureWithTeamId = (id: number, timestamp: number) => {
+export const getMockFixtureWithTeam = (name: string, timestamp: number) => {
     const fixture = {...mockUpcomingMatches.filter(match => {
-        return match.teams.away.id === id
-            || match.teams.home.id === id
+        return match.teams.away.name === name
+            || match.teams.home.name === name
     })[0]};
     fixture.fixture = {...fixture.fixture};
     fixture.fixture.timestamp = timestamp;
