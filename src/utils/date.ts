@@ -9,4 +9,8 @@ const destructureDate = (date: Date): {[key: string]: number} => {
   return { seconds, minutes, hour, weekDay, monthDay, month };
 };
 
-export { destructureDate };
+const currentTimestamp = () => {
+  return Math.trunc(new Date().getTime()/1000);
+}
+
+export { destructureDate, currentTimestamp };

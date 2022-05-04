@@ -1,7 +1,9 @@
 //imports
 import express, { response } from "express";
 import dotenv from 'dotenv';
-import cors from "cors";
+var cors = require('cors')
+import { install } from 'source-map-support';
+
 dotenv.config();
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 import keepAlive from "./utils/keepAlive";
@@ -9,9 +11,10 @@ import EmailController from "./application/controllers/Email";
 import EmailClient from "./application/insfrastructure/Email";
 import BscPrediction from "./BscPrediction";
 import CrpPrediction from "./CrpPrediction";
-import {callFootballApi} from "./utils/footballApi"
+import CroSportOracle from "./CroSportOracle";
+import {callFootballApi} from "./application/insfrastructure/footballApi"
 
-// setup server needs
+install();
 
 // keeps server active
 keepAlive();
@@ -44,5 +47,6 @@ app.listen(process.env.PORT || 3000);
 // start predictions
 // BscPrediction();
 // CrpPrediction();
+CroSportOracle();
 
 export { emailController}; 

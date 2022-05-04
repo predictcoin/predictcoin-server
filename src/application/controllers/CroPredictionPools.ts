@@ -1,5 +1,5 @@
 import { _CroLoserPool, _CroWinnerPool } from "../domain/CroPredictionPools";
-import {send as sendTx, call as callTx, call} from "../../utils/transaction";
+import {send as sendTx, call as callTx, call} from "../insfrastructure/transaction";
 import { addPool } from "../usecases/CroPredictionPools";
 import { emailController } from "../..";
 
