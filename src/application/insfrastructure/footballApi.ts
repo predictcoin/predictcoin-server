@@ -2,6 +2,8 @@ import axios from "axios";
 import {Request} from "express";
 import { getMockFixtureWithId, getMockFixtureWithTeamId, getMockUpcomingMatches, mockLeague, mockTeams } from "../../mock/football";
 import { Country, Fixture, FixtureLeague, FixtureTeam, Goals, League, Score, Season, Status, Team } from "../../types/football";
+import logger from "../../utils/logger";
+import Bugsnag from "../../utils/notification";
 
 const rapidKey = process.env.RAPID_API_KEY;
 
@@ -19,9 +21,11 @@ const handleCall = <T>(call: (..._: any)=> T) => {
     try{
       const result = await call(...params)
       return result;
-    }catch(error){
+    }catch(error: any){
       console.warn((error as any).message);
-      throw new Error((error as any).message);
+      logger.error(error.message);
+      Bugsnag.notify(new Error(error.message));
+      throw new Error(error.message)
     }
   }
 }
@@ -43,7 +47,7 @@ export const getUpcomingMatches = handleCall(async (from: string, to: string, le
   {fixture: Fixture, league: FixtureLeague, teams: { home:FixtureTeam, away:FixtureTeam }, goals: Goals, score: Score}[]
   > => {
   if(process.env.NODE_ENV === "development") return getMockUpcomingMatches(from);
-
+    
   if(from === to){
     const { data } = await callFootballApi({query: {url: "/fixtures", date: from, status: "NS", league, season}});
     return (data as any).response;

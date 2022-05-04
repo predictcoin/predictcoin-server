@@ -265,17 +265,18 @@ class CroSportOracleController {
     }
 
     upcomingMatches = upcomingMatches.slice(0, length);
-    await sendTx(
-      addSportEvents(this.contract, upcomingMatches), 
-      (status: boolean, txHash) => {
-        const message = status 
-          ? console.log(`Added events for ${from}. Txhash: ${txHash}`)
-          : console.log(`Failed to add events. ${txHash}`);
-        console.log(message);
-        logger.info(message);
-        callback && callback(status);
-      }
-    );
+    console.log(upcomingMatches);
+    // await sendTx(
+    //   addSportEvents(this.contract, upcomingMatches), 
+    //   (status: boolean, txHash) => {
+    //     const message = status 
+    //       ? console.log(`Added events for ${from}. Txhash: ${txHash}`)
+    //       : console.log(`Failed to add events. ${txHash}`);
+    //     console.log(message);
+    //     logger.info(message);
+    //     callback && callback(status);
+    //   }
+    // );
   }
 
   async scheduleAddEvent(){
@@ -331,17 +332,17 @@ class CroSportOracleController {
     
     
     await addEvents();
-    await this.checkEvents();
+    // await this.checkEvents();
 
-    cron.schedule(
-      process.env.NODE_ENV === "development" 
-        ? CronTime.every(playPeriod/60).minutes() 
-        : CronTime.everyDayAt(0, 0), 
-      async () => {
-        await addEvents();
-        await this.checkEvents();
-      }
-    );
+    // cron.schedule(
+    //   process.env.NODE_ENV === "development" 
+    //     ? CronTime.every(playPeriod/60).minutes() 
+    //     : CronTime.everyDayAt(0, 0), 
+    //   async () => {
+    //     await addEvents();
+    //     await this.checkEvents();
+    //   }
+    // );
   }
 }
 
