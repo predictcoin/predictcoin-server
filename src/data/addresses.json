@@ -19,7 +19,7 @@
     "CrpPrediction": "0xC80c40C49a66a930ef42652FFCcBE37b5ed43D67",
     "CrpLoserPool": "0xd9b4dD2b4dB9af58298593ef0709CE89fD8c154d",
     "CrpWinnerPool": "0xE91769d9bc4af9301d186b8834ea59f54BA41dE2",
-    
+
     "CroSportsOracle": "0x492be37ffc7d76A72F3e5E3B694E82620Eeb9985",
     "CRO": "0x7b8aD6d7560FAcd1959cfb4b4163D7d297c4bFc0"
   },
@@ -32,6 +32,7 @@
     "CrpLoserPool": "0x08Fd84D1f574Fe8d4b0425940DE40B844a679D7A",
     "CrpWinnerPool": "0x1eE1e446851609E535f0081904238356b03f72A4",
 
+    "CroSportsOracle": "0x492be37ffc7d76A72F3e5E3B694E82620Eeb9985",
     "CRO": "0x7b8aD6d7560FAcd1959cfb4b4163D7d297c4bFc0"
   }
 }
