@@ -330,18 +330,18 @@ class CroSportOracleController {
     };
     
     
-    // await addEvents();
-    // await this.checkEvents();
+    await addEvents();
+    await this.checkEvents();
 
-    // cron.schedule(
-    //   process.env.NODE_ENV === "development" 
-    //     ? CronTime.every(playPeriod/60).minutes() 
-    //     : CronTime.everyDayAt(0, 0), 
-    //   async () => {
-    //     await addEvents();
-    //     await this.checkEvents();
-    //   }
-    // );
+    cron.schedule(
+      process.env.NODE_ENV === "development" 
+        ? CronTime.every(playPeriod/60).minutes() 
+        : CronTime.everyDayAt(0, 0), 
+      async () => {
+        await addEvents();
+        await this.checkEvents();
+      }
+    );
   }
 }
 
