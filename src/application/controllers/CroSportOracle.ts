@@ -11,7 +11,7 @@ import { formatEvents } from "../../utils/format";
 import { currentTimestamp, destructureDate } from "../../utils/date";
 import delay from "delay";
 import { dailyMatches, matchTime, playPeriod } from "../../data/football/variables";
-import { stat } from "fs/promises";
+import logger from "../../utils/logger";
 
 
 const runSendTx =  async (tx: (_:any) => Promise<void>) => {
@@ -39,13 +39,15 @@ class CroSportOracleController {
     for(let i =0; i < events.length; i++){
       const {event, fixture} = events[i];
       if(this.watchedEvents.get(event.id)) {
-        console.log("Already watching event 2");
+        console.log(`Already watching Event ${event.id}`);
+        logger.info(`Already watching Event ${event.id}`)
         continue;
       }
 
       if(fixture.fixture.timestamp !== event.startTimestamp) {
         console.error("Discrepancy between timestamps", event.id);
-        continue;
+        logger.error("Discrepancy between timestamps", event.id)
+        break;
       }
       const date = new Date();
       date.setDate(date.getDate() + 1);
@@ -129,7 +131,12 @@ class CroSportOracleController {
 
     for(let i = 0; i<upcomingEvents.length; i++){
       const {teamA, teamB, league, season, round, startTimestamp, id, endTimestamp} = upcomingEvents[i];
-      if(this.watchedEvents.get(id)) { console.log("Already watching event 1"); continue; } ;
+      if(this.watchedEvents.get(id)) { 
+        console.log(`Already watching Event ${id}`);
+        logger.info(`Already watching Event ${id}`)
+        continue; 
+      } 
+
       const date = new Date(startTimestamp).toISOString().split('T')[0];
       const teamId = (await getTeam(teamA)).team.id;
       const leagueId = (await getLeague(league)).league.id;
@@ -173,10 +180,12 @@ class CroSportOracleController {
     callback?: (...params: any[]) => any
   ){
     await sendTx(declareOutcomes(this.contract, events),
-      (status: boolean, message) => {
-        status 
-          ? console.log(`Declared events: ${events.map((e) => e.id).join(", ")}. Txhash: ${message}`)
-          : console.log(`Failed to declare events: ${events.map((e) => e.id).join(", ")}. ${message}`)
+      (status: boolean, txHash) => {
+        const message = status 
+          ? `Declared events: ${events.map((e) => e.id).join(", ")}. Txhash: ${txHash}`
+          : `Failed to declare events: ${events.map((e) => e.id).join(", ")}. ${txHash}`;
+        console.log(message);
+        logger.info(message);
         callback && callback(status);
       }
     )
@@ -184,10 +193,12 @@ class CroSportOracleController {
 
   async cancelEvents(events: string[], callback?: (...params: any[]) => any){
     await sendTx(cancelSportEvents(this.contract, events), 
-      (status: boolean, message) => {
-        status 
-          ? console.log(`Canceled events: ${events.join(", ")}. Txhash: ${message}`)
-          : console.log(`Failed to cancel events: ${events.join(", ")}. ${message}`);
+      (status: boolean, txHash) => {
+        const message = status 
+          ? console.log(`Canceled events: ${events.join(", ")}. Txhash: ${txHash}`)
+          : console.log(`Failed to cancel events: ${events.join(", ")}. ${txHash}`);
+        console.log(message);
+        logger.info(message);
         callback && callback(status);
       }
     );
@@ -256,10 +267,12 @@ class CroSportOracleController {
     upcomingMatches = upcomingMatches.slice(0, length);
     await sendTx(
       addSportEvents(this.contract, upcomingMatches), 
-      (status: boolean, message) => {
-        status 
-          ? console.log(`Added events for ${from}. Txhash: ${message}`)
-          : console.log(`Failed to add events. ${message}`);
+      (status: boolean, txHash) => {
+        const message = status 
+          ? console.log(`Added events for ${from}. Txhash: ${txHash}`)
+          : console.log(`Failed to add events. ${txHash}`);
+        console.log(message);
+        logger.info(message);
         callback && callback(status);
       }
     );
@@ -317,18 +330,18 @@ class CroSportOracleController {
     };
     
     
-    await addEvents();
-    await this.checkEvents();
+    // await addEvents();
+    // await this.checkEvents();
 
-    cron.schedule(
-      process.env.NODE_ENV === "development" 
-        ? CronTime.every(playPeriod/60).minutes() 
-        : CronTime.everyDayAt(0, 0), 
-      async () => {
-        await addEvents();
-        await this.checkEvents();
-      }
-    );
+    // cron.schedule(
+    //   process.env.NODE_ENV === "development" 
+    //     ? CronTime.every(playPeriod/60).minutes() 
+    //     : CronTime.everyDayAt(0, 0), 
+    //   async () => {
+    //     await addEvents();
+    //     await this.checkEvents();
+    //   }
+    // );
   }
 }
 

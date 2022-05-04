@@ -2,6 +2,8 @@ import getGasPrice from "../../utils/gasPrice";
 import { setCroProvider } from "../insfrastructure/CroWeb3";
 import createLock from "../../utils/SimpleLock";
 import delay from "delay";
+import logger from "../../utils/logger";
+import Bugsnag from "../../utils/notification";
 
 const lock = createLock("sendTransaction");
 
@@ -27,7 +29,10 @@ async function send(tx: any, callback?: (...param:any) => any){
   }
   catch(error:any) {
     callback && callback(false, error.message);
-    console.error(error.message);
+    const message = `SendTx: ${error.message}`;
+    console.error(message);
+    logger.error(message);
+    Bugsnag.notify(new Error(message))
   }
   finally {
     await delay(2000);
@@ -46,7 +51,10 @@ async function call( tx:any ){
     return res;
   }
   catch(error:any){
-    console.error(error.message);
+    const message = `SendTx: ${error.message}`;
+    console.error(message);
+    logger.error(message);
+    Bugsnag.notify(new Error(message));
   }
 }
 

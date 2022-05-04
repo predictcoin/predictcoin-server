@@ -1,4 +1,5 @@
 import Web3 from "web3";
+import logger from "../../utils/logger";
 const rpcUrls = [
   "https://rpc.vvs.finance",
   "https://mmf-rpc.xstaking.sg/",
@@ -19,14 +20,16 @@ export const setCroProvider = async () => {
 
     try{
       connected = await web3.eth.net.isListening();
-    }catch(error){
+    }catch(error:any){
       // @ts-ignore
-      console.warn("Provider Message", error.message);
+      console.error("Provider Message", error.message);
+      logger.error(`Provider: ${(error).message}}`);
       connected = false;
     }
 
     if(!connected){
       console.log("changing provider");
+      logger.error(`Provider: Changing Provider to ${rpcUrls[counter]}}`)
       web3.setProvider(rpcUrls[counter]);
       counter = counter+1 === rpcUrls.length ? 0 : counter+1;
     }else{
