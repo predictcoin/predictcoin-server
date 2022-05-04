@@ -1,4 +1,5 @@
 export const leagues = [
+  1, // World cup
   2, // ChampionsLeague
   39, // Premier League
   140, // La Liga
