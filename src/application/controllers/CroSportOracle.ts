@@ -135,7 +135,7 @@ class CroSportOracleController {
     const cancelledEvents: string[] = [];
     const endedEvents: { id: string; scoreA: number; scoreB: number; }[] = [];
     const eventsToWatch = [];
-    console.log(upcomingEvents.length);
+
     for(let i = 0; i<upcomingEvents.length; i++){
       const {teamA, teamB, league, season, round, startTimestamp, id, endTimestamp} = upcomingEvents[i];
       if(this.watchedEvents.get(id)) { 
@@ -292,13 +292,11 @@ class CroSportOracleController {
   async scheduleAddEvent(){
     const length = dailyMatches;
     const addEvents = async () => {
-      console.log("adding")
       const upcomingEvents: CroSportEvent[] = formatEvents(await callTx(getUpcomingEvents(this.contract)));
       // add events for today
       let date = new Date();
       let from = date.toISOString().split('T')[0];
       let present1 = false, present2 = false;
-      console.log("adding 2")
 
       for(let i =0; i < upcomingEvents.length; i++){
         const event = upcomingEvents[i];
@@ -341,7 +339,7 @@ class CroSportOracleController {
     };
     
     
-    await addEvents();
+    // await addEvents();
     await this.checkEvents();
 
     cron.schedule(
@@ -351,6 +349,9 @@ class CroSportOracleController {
       async () => {
         await addEvents();
         await this.checkEvents();
+      },
+      {
+        timezone: "Etc/UTC",
       }
     );
   }
