@@ -99,7 +99,6 @@ export const getFixture = handleCall<getFixtureInput, Promise<apiFixture>>
           && (fixture.teams.away.name === team || fixture.teams.home.name === team)
           && fixture.league.name === league
           && fixture.league.season === season
-          && fixture.league.round === round
       })[0]
       
       return fixture;
