@@ -75,7 +75,10 @@ class CroSportOracleController {
               date: new Date(+event.startTimestamp*1000).toISOString().split('T')[0],
               timestamp: +event.startTimestamp
             }));
-            if(!_fixture) continue;
+            if(!_fixture) {
+              await this.cancelEvents([event.id]);
+              break;
+            };
 
             const {teams, score} = _fixture;
             const currentEventStates: CroSportEvent[] = (await callTx(getEvents(this.contract, [event.id])));
@@ -147,9 +150,13 @@ class CroSportOracleController {
       const date = new Date(+startTimestamp*1000).toISOString().split('T')[0];
       const fixtures = await getFixtures({ date });
       const fixture = (await getFixture({fixtures, team: teamA, league, season: +season, round, date}));
-      console.log(i, id, season, league, round, date);
+      if(!fixture) {
+        cancelledEvents.push(id);
+        continue;
+      }
       const {teams, score} = fixture;
-      if( cancelledStatuses.indexOf(fixture.fixture.status.short) > -1 ){
+
+      if( cancelledStatuses.indexOf(fixture.fixture.status.short) > -1 || !fixture ){
         cancelledEvents.push(id);
       } 
       else if(
@@ -236,14 +243,17 @@ class CroSportOracleController {
     });
 
     leagueData.unshift(..._preferredLeagues);
-
     let upcomingMatches: InitialCroSportEvent[] = [];
-    
+    const fixtures = await getFixtures({ date, status: "NS" });
+    const blocktime = +(await web3.eth.getBlock("pending")).timestamp + 3600;
 
     for(let i = 0; i < leagueData.length && upcomingMatches.length < length; i++){
-      const { leagueName } = leagueData[i];
-      const fixtures = await getFixtures({ date, status: "NS" })
-      const matches = fixtures.filter( fixture => fixture.league.name === leagueName);
+      const { leagueName, leagueId } = leagueData[i];
+      const matches = fixtures.filter( fixture => 
+        fixture.league.name === leagueName 
+          && fixture.league.id === leagueId 
+          && +(fixture.fixture.timestamp) > blocktime
+      );
 
       // @ts-ignore
       let _matches: InitialCroSportEvent[] = ( 
@@ -339,7 +349,7 @@ class CroSportOracleController {
     };
     
     
-    // await addEvents();
+    await addEvents();
     await this.checkEvents();
 
     cron.schedule(
