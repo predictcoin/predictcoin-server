@@ -28,7 +28,7 @@ export const setCroProvider = async () => {
     }
 
     if(!connected){
-      console.log("changing provider");
+      console.log(`Provider: Changing Provider to ${rpcUrls[counter]}`);
       logger.error(`Provider: Changing Provider to ${rpcUrls[counter]}`)
       web3.setProvider(rpcUrls[counter]);
       counter = counter+1 === rpcUrls.length ? 0 : counter+1;
