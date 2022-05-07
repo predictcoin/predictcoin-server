@@ -32,7 +32,14 @@ export const leagues = [
   15, // Fifa club World cup
   137, // Coppa Italia
 
-
+  48, // League Cup
+  41, // League One
+  42, // League Two
+  179, // Scotland Premiership
+  203, // Super Lig Turkey
+  94, // Primeira Liga
+  79, // Bundesliga 2
+  89, // Eerste Divisie
   46, // EFL Trophy
   40, // Championship
   143, // Copa del Rey
@@ -52,4 +59,8 @@ export const leagues = [
   262, // Liga MX
   457, // Campeonato de Portugal Prio - Group A
   179, // Scottish Premiership
+
+  233, // Premier League Egypt
+  357, // Premier Division Ireland
+  119, // Denmark
 ]
