@@ -63,7 +63,6 @@ export const getLeague = handleCall<{name: string}, Promise<getLeagueReturn>>
     const {name} = param;
     if(process.env.NODE_ENV === "development") return mockLeague;
     const { data } = await callFootballApi({query: {url: "/leagues", name}});
-    (data as any).response.forEach(( league: { country:Country }) => console.log("league", league.country.name));
     return (data as any).response[0];
 })
 
@@ -80,23 +79,23 @@ export const getTeam = handleCall<{name: string, country: string}, Promise<{team
     if(process.env.NODE_ENV === "development") return mockTeams[name as keyof typeof mockTeams];
     const {data} = await callFootballApi({query: {url: "/teams", name}});
     return (data as any).response.filter((team:{team: Team}) => {
-      console.log(country, team.team.country);
       return country.toLowerCase() === team.team.country.toLowerCase()}
       )[0];
 })
 
-type getFixtureInput = {team: string, league:string, season: number, round: string, 
+type getFixtureInput = {teamA: string, teamB: string, league:string, season: number, round: string, 
       date:string, fixtures?: apiFixture[], timestamp?: number};
 export const getFixture = handleCall<getFixtureInput, Promise<apiFixture>>
   (async(param: getFixtureInput)
     : Promise<apiFixture> => {
-      let { team, league, season, round, date, fixtures, timestamp } = param;
+      let { teamA, teamB, league, season, round, date, fixtures, timestamp } = param;
 
-      if(process.env.NODE_ENV === "development" && timestamp) return getMockFixtureWithTeam(team, timestamp);
+      if(process.env.NODE_ENV === "development" && timestamp) return getMockFixtureWithTeam(teamA, timestamp);
       fixtures = !fixtures ? await getFixtures({date}) : fixtures;
       const fixture = fixtures.filter((fixture:apiFixture) => {
         return fixture.fixture.date.split("T")[0] === date
-          && (fixture.teams.away.name === team || fixture.teams.home.name === team)
+          && (fixture.teams.away.name === teamA || fixture.teams.home.name === teamA)
+          && (fixture.teams.away.name === teamB || fixture.teams.home.name === teamB)
           && fixture.league.name === league
           && fixture.league.season === season
       })[0]

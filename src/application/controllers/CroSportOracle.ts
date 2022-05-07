@@ -44,11 +44,6 @@ class CroSportOracleController {
         continue;
       }
 
-      if(fixture.fixture.timestamp !== event.startTimestamp) {
-        console.error("Discrepancy between timestamps", event.id);
-        logger.error("Discrepancy between timestamps", event.id)
-        break;
-      }
       const date = new Date();
       date.setDate(date.getDate() + 1);
       const _date = new Date(+event.endTimestamp * 1000);
@@ -68,7 +63,8 @@ class CroSportOracleController {
           console.log("running");
           for(let i = 0; i<40 && !declared; i++){
             const _fixture = (await getFixture({
-              team: fixture.teams.home.name,
+              teamA: fixture.teams.home.name,
+              teamB: fixture.teams.away.name,
               league: fixture.league.name,
               season: fixture.league.season,
               round: fixture.league.round,
@@ -149,7 +145,7 @@ class CroSportOracleController {
 
       const date = new Date(+startTimestamp*1000).toISOString().split('T')[0];
       const fixtures = await getFixtures({ date });
-      const fixture = (await getFixture({fixtures, team: teamA, league, season: +season, round, date}));
+      const fixture = (await getFixture({fixtures, teamA, teamB, league, season: +season, round, date}));
       if(!fixture) {
         cancelledEvents.push(id);
         continue;
@@ -347,7 +343,6 @@ class CroSportOracleController {
         await runSendTx(async (callback) => await this.addNewEvents(length, from, callback));
       }
     };
-    
     
     await addEvents();
     await this.checkEvents();
