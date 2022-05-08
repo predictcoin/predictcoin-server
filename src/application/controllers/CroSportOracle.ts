@@ -146,7 +146,7 @@ class CroSportOracleController {
       } 
 
       const date = new Date(+startTimestamp*1000).toISOString().split('T')[0];
-      
+
       let fixtures;
       if(!availableFixtures[date]){
         fixtures = await getFixtures({ date });
@@ -216,8 +216,8 @@ class CroSportOracleController {
     await sendTx(cancelSportEvents(this.contract, events), 
       (status: boolean, txHash) => {
         const message = status 
-          ? console.log(`Canceled events: ${events.join(", ")}. Txhash: ${txHash}`)
-          : console.log(`Failed to cancel events: ${events.join(", ")}. ${txHash}`);
+          ? `Canceled events: ${events.join(", ")}. Txhash: ${txHash}`
+          : `Failed to cancel events: ${events.join(", ")}. ${txHash}`;
         console.log(message);
         logger.info(message);
         callback && callback(status);
@@ -300,8 +300,8 @@ class CroSportOracleController {
           addSportEvents(this.contract, upcomingMatches), 
           (status: boolean, txHash) => {
             const message = status 
-              ? console.log(`Added events for ${date}. Txhash: ${txHash}`)
-              : console.log(`Failed to add events. ${txHash}`);
+              ? `Added events for ${date}. Txhash: ${txHash}`
+              : `Failed to add events. ${txHash}`;
             console.log(message);
             logger.info(message);
             callback && callback(status);
