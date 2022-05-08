@@ -1,14 +1,12 @@
 import axios from "axios";
 import {Request} from "express";
-import { getMockFixtureWithTeam, getMockUpcomingMatches, mockLeague, mockTeams } from "../../mock/football";
-import { Country, Fixture, FixtureLeague, FixtureTeam, Goals, League, Score, Season, Status, Team } from "../../types/football";
+import { getMockFixtureWithTeam, getMockFixtures, mockLeague, mockTeams } from "../../mock/football";
+import { apiFixture, apiLeague, Country, Fixture, FixtureLeague, FixtureTeam, Goals, League, Score, Season, Status, Team } from "../../types/football";
 import logger from "../../utils/logger";
 import Bugsnag from "../../utils/notification";
 
 const rapidKey = process.env.RAPID_API_KEY;
 
-type apiFixture = {fixture: Fixture, league: FixtureLeague, teams: { home:FixtureTeam, away:FixtureTeam }, goals: Goals, score: Score};
-type apiLeague = {league: League, country: Country, seasons: Season[]};
 
 const footballApi = axios.create({
   baseURL: "https://api-football-v1.p.rapidapi.com/v3",
@@ -84,11 +82,12 @@ export const getTeam = handleCall<{name: string, country: string}, Promise<{team
 })
 
 type getFixtureInput = {teamA: string, teamB: string, league:string, season: number, round: string, 
-      date:string, fixtures?: apiFixture[], timestamp?: number};
+      date:string, fixtures?: apiFixture[], timestamp: number};
+
 export const getFixture = handleCall<getFixtureInput, Promise<apiFixture>>
   (async(param: getFixtureInput)
     : Promise<apiFixture> => {
-      let { teamA, teamB, league, season, round, date, fixtures, timestamp } = param;
+      let { teamA, teamB, league, season, date, fixtures, timestamp } = param;
 
       if(process.env.NODE_ENV === "development" && timestamp) return getMockFixtureWithTeam(teamA, timestamp);
       fixtures = !fixtures ? await getFixtures({date}) : fixtures;
@@ -99,7 +98,7 @@ export const getFixture = handleCall<getFixtureInput, Promise<apiFixture>>
           && fixture.league.name === league
           && fixture.league.season === season
       })[0]
-      
+
       return fixture;
 })
 
@@ -107,7 +106,7 @@ export const getFixtures = handleCall<{date:string, status?: Status}, Promise<ap
   (async (param: {date: string, status?: Status})
     : Promise<apiFixture[]> => {
       const {date, status} = param;
-      if(process.env.NODE_ENV === "development") return getMockUpcomingMatches(date);
+      if(process.env.NODE_ENV === "development") return getMockFixtures(date);
       const {data} = await callFootballApi({
         query: {url: "/fixtures",
           date,

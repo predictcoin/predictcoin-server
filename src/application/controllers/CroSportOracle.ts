@@ -12,6 +12,7 @@ import { currentTimestamp, destructureDate } from "../../utils/date";
 import delay from "delay";
 import { dailyMatches, matchTime, playPeriod } from "../../data/football/variables";
 import logger from "../../utils/logger";
+import { apiFixture } from "../../types/football";
 
 
 const runSendTx =  async (tx: (_:any) => Promise<void>) => {
@@ -134,6 +135,7 @@ class CroSportOracleController {
     const cancelledEvents: string[] = [];
     const endedEvents: { id: string; scoreA: number; scoreB: number; }[] = [];
     const eventsToWatch = [];
+    const availableFixtures: {[key: string]: apiFixture[]} = {};
 
     for(let i = 0; i<upcomingEvents.length; i++){
       const {teamA, teamB, league, season, round, startTimestamp, id, endTimestamp} = upcomingEvents[i];
@@ -144,8 +146,18 @@ class CroSportOracleController {
       } 
 
       const date = new Date(+startTimestamp*1000).toISOString().split('T')[0];
-      const fixtures = await getFixtures({ date });
-      const fixture = (await getFixture({fixtures, teamA, teamB, league, season: +season, round, date}));
+      
+      let fixtures;
+      if(!availableFixtures[date]){
+        fixtures = await getFixtures({ date });
+        availableFixtures[date] = fixtures;
+      }else{
+        fixtures = availableFixtures[date];
+      }
+
+      const fixture = (await getFixture(
+        {fixtures, teamA, teamB, league, season: +season, round, date, timestamp: +startTimestamp}
+      ));
       if(!fixture) {
         cancelledEvents.push(id);
         continue;
@@ -241,7 +253,8 @@ class CroSportOracleController {
     leagueData.unshift(..._preferredLeagues);
     let upcomingMatches: InitialCroSportEvent[] = [];
     const fixtures = await getFixtures({ date, status: "NS" });
-    const blocktime = +(await web3.eth.getBlock("pending")).timestamp + 3600;
+    const blocktime = +(await web3.eth.getBlock("pending")).timestamp +
+      (process.env.NODE_ENV === "development" ? 0 : 3600);
 
     for(let i = 0; i < leagueData.length && upcomingMatches.length < length; i++){
       const { leagueName, leagueId } = leagueData[i];
@@ -282,17 +295,18 @@ class CroSportOracleController {
 
     upcomingMatches = upcomingMatches.slice(0, length);
 
-    await sendTx(
-      addSportEvents(this.contract, upcomingMatches), 
-      (status: boolean, txHash) => {
-        const message = status 
-          ? console.log(`Added events for ${date}. Txhash: ${txHash}`)
-          : console.log(`Failed to add events. ${txHash}`);
-        console.log(message);
-        logger.info(message);
-        callback && callback(status);
-      }
-    );
+    upcomingMatches.length > 0 
+      && await sendTx(
+          addSportEvents(this.contract, upcomingMatches), 
+          (status: boolean, txHash) => {
+            const message = status 
+              ? console.log(`Added events for ${date}. Txhash: ${txHash}`)
+              : console.log(`Failed to add events. ${txHash}`);
+            console.log(message);
+            logger.info(message);
+            callback && callback(status);
+          }
+        );
   }
 
   async scheduleAddEvent(){
@@ -316,7 +330,7 @@ class CroSportOracleController {
           if (present1) break;
       }
       console.log(present1);
-      
+
       if(!present1) {
         await runSendTx(async (callback) => await this.addNewEvents(length, from, callback));
       }
