@@ -1,5 +1,5 @@
 import { _BscLoserPool, _BscWinnerPool } from "../domain/BscPredictionPools";
-import {send as sendTx, call as callTx, call} from "../../utils/transaction";
+import {send as sendTx, call as callTx, call} from "../insfrastructure/transaction";
 import { addPool } from "../usecases/BscPredictionPools";
 import { emailController } from "../..";
 
