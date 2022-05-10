@@ -24,7 +24,7 @@ async function send(tx: any, callback?: (...param:any) => any){
         callback && callback(true, receipt.transactionHash);
       })
       .on('error', function(error:any, receipt:any) { 
-        callback && callback(false, error.message, receipt ? receipt.transactionHash: "");
+        throw new Error(`${error.message} ${receipt ? receipt.transactionHash: ""}`)
       });
   }
   catch(error:any) {
