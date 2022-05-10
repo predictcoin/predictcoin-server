@@ -3,7 +3,7 @@ import {send as sendTx, call as callTx, call} from "../insfrastructure/transacti
 import { CroSportEvent, CroSportOracle, EventOutcome, InitialCroSportEvent } from "../domain/CroSportsOracle";
 import { addSportEvents, cancelSportEvents, declareOutcomes, eventExists, getEvents, getLiveEvents, getUpcomingEvents } from "../usecases/CroSportOracle";
 import cron from "node-cron";
-import { getFixture, getFixtureWithId, getLeague, getLeagues, getTeam, getUpcomingMatches } from "../insfrastructure/footballApi";
+import { getFixture, getFixtures, getLeague, getLeagues } from "../insfrastructure/footballApi";
 import { leagues as preferredLeagues } from "../../data/football/leagues";
 import web3 from "../insfrastructure/CroWeb3";
 import { cancelledStatuses, endedStatuses } from "../../data/football/status";
@@ -12,6 +12,8 @@ import { currentTimestamp, destructureDate } from "../../utils/date";
 import delay from "delay";
 import { dailyMatches, matchTime, playPeriod } from "../../data/football/variables";
 import logger from "../../utils/logger";
+import { apiFixture } from "../../types/football";
+import Bugsnag from "@bugsnag/js";
 
 
 const runSendTx =  async (tx: (_:any) => Promise<void>) => {
@@ -34,7 +36,7 @@ class CroSportOracleController {
 
 
   // watches upcoming events and updates their score after full time
-  async watchEvents(events: { fixture: Awaited<ReturnType<typeof getFixture>>[0], event: CroSportEvent }[]){
+  async watchEvents(events: { fixture: Awaited<ReturnType<typeof getFixture>>, event: CroSportEvent }[]){
     console.log("watching");
     for(let i =0; i < events.length; i++){
       const {event, fixture} = events[i];
@@ -44,11 +46,6 @@ class CroSportOracleController {
         continue;
       }
 
-      if(fixture.fixture.timestamp !== event.startTimestamp) {
-        console.error("Discrepancy between timestamps", event.id);
-        logger.error("Discrepancy between timestamps", event.id)
-        break;
-      }
       const date = new Date();
       date.setDate(date.getDate() + 1);
       const _date = new Date(+event.endTimestamp * 1000);
@@ -67,9 +64,19 @@ class CroSportOracleController {
           let declared = false;
           console.log("running");
           for(let i = 0; i<40 && !declared; i++){
-            const fixtures = (await getFixtureWithId(fixture.fixture.id, event.startTimestamp));
-            if(!fixtures || fixtures.length === 0) continue;
-            const _fixture = fixtures[0];
+            const _fixture = (await getFixture({
+              teamA: fixture.teams.home.name,
+              teamB: fixture.teams.away.name,
+              league: fixture.league.name,
+              season: fixture.league.season,
+              round: fixture.league.round,
+              date: new Date(+event.startTimestamp*1000).toISOString().split('T')[0],
+              timestamp: +event.startTimestamp
+            }));
+            if(!_fixture) {
+              await this.cancelEvents([event.id]);
+              break;
+            };
 
             const {teams, score} = _fixture;
             const currentEventStates: CroSportEvent[] = (await callTx(getEvents(this.contract, [event.id])));
@@ -125,9 +132,11 @@ class CroSportOracleController {
     const upcomingEvents: CroSportEvent[] = formatEvents(await callTx(getUpcomingEvents(this.contract)));
     const liveEvents: CroSportEvent[] = formatEvents(await callTx(getLiveEvents(this.contract)));
     upcomingEvents.push(...liveEvents);
+
     const cancelledEvents: string[] = [];
     const endedEvents: { id: string; scoreA: number; scoreB: number; }[] = [];
     const eventsToWatch = [];
+    const availableFixtures: {[key: string]: apiFixture[]} = {};
 
     for(let i = 0; i<upcomingEvents.length; i++){
       const {teamA, teamB, league, season, round, startTimestamp, id, endTimestamp} = upcomingEvents[i];
@@ -137,13 +146,26 @@ class CroSportOracleController {
         continue; 
       } 
 
-      const date = new Date(startTimestamp).toISOString().split('T')[0];
-      const teamId = (await getTeam(teamA)).team.id;
-      const leagueId = (await getLeague(league)).league.id;
-      const fixture = (await getFixture(teamId, leagueId, +season, round, date, startTimestamp))[0];
+      const date = new Date(+startTimestamp*1000).toISOString().split('T')[0];
+
+      let fixtures;
+      if(!availableFixtures[date]){
+        fixtures = await getFixtures({ date });
+        availableFixtures[date] = fixtures;
+      }else{
+        fixtures = availableFixtures[date];
+      }
+
+      const fixture = (await getFixture(
+        {fixtures, teamA, teamB, league, season: +season, round, date, timestamp: +startTimestamp}
+      ));
+      if(!fixture) {
+        cancelledEvents.push(id);
+        continue;
+      }
       const {teams, score} = fixture;
 
-      if( cancelledStatuses.indexOf(fixture.fixture.status.short) > -1 ){
+      if( cancelledStatuses.indexOf(fixture.fixture.status.short) > -1 || !fixture ){
         cancelledEvents.push(id);
       } 
       else if(
@@ -186,6 +208,7 @@ class CroSportOracleController {
           : `Failed to declare events: ${events.map((e) => e.id).join(", ")}. ${txHash}`;
         console.log(message);
         logger.info(message);
+        !status && Bugsnag.notify(new Error(message));
         callback && callback(status);
       }
     )
@@ -195,21 +218,24 @@ class CroSportOracleController {
     await sendTx(cancelSportEvents(this.contract, events), 
       (status: boolean, txHash) => {
         const message = status 
-          ? console.log(`Canceled events: ${events.join(", ")}. Txhash: ${txHash}`)
-          : console.log(`Failed to cancel events: ${events.join(", ")}. ${txHash}`);
+          ? `Canceled events: ${events.join(", ")}. Txhash: ${txHash}`
+          : `Failed to cancel events: ${events.join(", ")}. ${txHash}`;
         console.log(message);
         logger.info(message);
+        !status && Bugsnag.notify(new Error(message));
         callback && callback(status);
       }
     );
   }
 
-  async addNewEvents(length: number, from: string, to: string, callback?: (...params: any[]) => any){
+  async addNewEvents(length: number, date: string, callback?: (...params: any[]) => any){
     const _leagues = await getLeagues();
-    let leagueData : {season: number | undefined, leagueId: number}[] = _leagues.map( ({league, seasons}) => (
-      {leagueId: league.id, season: seasons[seasons.length-1].current ? seasons.pop()?.year : undefined})
+    let leagueData : {season: number | undefined, leagueName: string, leagueId: number}[] = _leagues.map( ({league, seasons}) => (
+      {leagueId: league.id, 
+        leagueName: league.name, 
+        season: seasons[seasons.length-1].current ? seasons.pop()?.year : undefined})
     );
-    leagueData = leagueData.filter(({season, leagueId}) => season !== undefined);
+    leagueData = leagueData.filter(({season, leagueName}) => season !== undefined);
 
     let _preferredLeagues: typeof leagueData = [];
 
@@ -228,12 +254,18 @@ class CroSportOracleController {
     });
 
     leagueData.unshift(..._preferredLeagues);
-
     let upcomingMatches: InitialCroSportEvent[] = [];
+    const fixtures = await getFixtures({ date, status: "NS" });
+    const blocktime = +(await web3.eth.getBlock("pending")).timestamp +
+      (process.env.NODE_ENV === "development" ? 0 : 3600);
 
     for(let i = 0; i < leagueData.length && upcomingMatches.length < length; i++){
-      const {leagueId, season} = leagueData[i];
-      const matches = await getUpcomingMatches(from, to, leagueId, season);
+      const { leagueName, leagueId } = leagueData[i];
+      const matches = fixtures.filter( fixture => 
+        fixture.league.name === leagueName 
+          && fixture.league.id === leagueId 
+          && +(fixture.fixture.timestamp) > blocktime
+      );
 
       // @ts-ignore
       let _matches: InitialCroSportEvent[] = ( 
@@ -259,76 +291,79 @@ class CroSportOracleController {
           })
         )
       ).filter(match => match !== undefined);
-      
+
       _matches = (_matches);
       upcomingMatches = [...upcomingMatches, ..._matches];
     }
 
     upcomingMatches = upcomingMatches.slice(0, length);
-    await sendTx(
-      addSportEvents(this.contract, upcomingMatches), 
-      (status: boolean, txHash) => {
-        const message = status 
-          ? console.log(`Added events for ${from}. Txhash: ${txHash}`)
-          : console.log(`Failed to add events. ${txHash}`);
-        console.log(message);
-        logger.info(message);
-        callback && callback(status);
-      }
-    );
+
+    upcomingMatches.length > 0 
+      && await sendTx(
+          addSportEvents(this.contract, upcomingMatches), 
+          (status: boolean, txHash) => {
+            const message = status 
+              ? `Added events for ${date}. Txhash: ${txHash}`
+              : `Failed to add events for ${date}. ${txHash}`;
+            console.log(message);
+            logger.info(message);
+            !status && Bugsnag.notify(new Error(message));
+            callback && callback(status);
+          }
+        );
+  }
+
+  checkEventsPresent = async ({from, _delay} : {from: string, _delay?: boolean}): Promise<boolean> => {
+    _delay && await delay(2000);
+    let present = false;
+    const upcomingEvents: CroSportEvent[] = formatEvents(await callTx(getUpcomingEvents(this.contract)));
+    for(let i =0; i < upcomingEvents.length || !present; i++){
+      const event = upcomingEvents[i];
+        if( process.env.NODE_ENV === "development" ) {
+          const time = currentTimestamp();
+          present = +event.startTimestamp > time && event.startTimestamp < time + playPeriod;
+        }else{
+          present = new Date(+event.startTimestamp*1000).toISOString().split('T')[0] === from
+        }
+    }
+    return present;
   }
 
   async scheduleAddEvent(){
     const length = dailyMatches;
     const addEvents = async () => {
-      console.log("adding")
-      const upcomingEvents: CroSportEvent[] = formatEvents(await callTx(getUpcomingEvents(this.contract)));
       // add events for today
       let date = new Date();
       let from = date.toISOString().split('T')[0];
-      let present1 = false, present2 = false;
-      console.log("adding 2")
-
-      for(let i =0; i < upcomingEvents.length; i++){
-        const event = upcomingEvents[i];
-          if( process.env.NODE_ENV === "development" ) {
-            const time = currentTimestamp();
-            present1 = +event.startTimestamp > time && event.startTimestamp < time + playPeriod;
-          }else{
-            present1 = new Date(event.startTimestamp).toISOString().split('T')[0] === from
-          }
-          
-          if (present1) break;
-      }
+      let present1: boolean, present2: boolean;
+      present1 = await this.checkEventsPresent({from})
       console.log(present1);
-      
-      if(!present1) {
-        await runSendTx(async (callback) => await this.addNewEvents(length, from, from, callback));
+
+      const checkTxSuccess = (from: string, callback: (status: boolean) => void) => async () => {
+        const success = await this.checkEventsPresent({from, _delay: true});
+        callback(success);
       }
 
+      if(!present1) {
+        await runSendTx(
+          async (callback: (status: boolean) => void) => 
+            await this.addNewEvents(length, from, checkTxSuccess(from, callback))
+        );
+      }
 
-      // add events for tomorrow
+      // add events for next day
       date.setDate(date.getDate() + 1);
       from = date.toISOString().split("T")[0];
-
-      for(let i = 0; i < upcomingEvents.length; i++){
-        const event = upcomingEvents[i];
-        if( process.env.NODE_ENV === "development" ) {
-            const time = currentTimestamp() + playPeriod;
-            present2 = +event.startTimestamp > time && event.startTimestamp < time + playPeriod*2;
-          }else {
-            present2 = new Date(event.startTimestamp).toISOString().split('T')[0] === from
-          }
-
-          if (present2) break;
-      };
+      present2 = await this.checkEventsPresent({from});
       console.log(present2);
 
       if(!present2) {
-        await runSendTx(async (callback) => await this.addNewEvents(length, from, from, callback));
+        await runSendTx(
+          async (callback: (status: boolean) => void) => 
+            await this.addNewEvents(length, from, checkTxSuccess(from, callback))
+        );
       }
     };
-    
     
     await addEvents();
     await this.checkEvents();
@@ -340,6 +375,9 @@ class CroSportOracleController {
       async () => {
         await addEvents();
         await this.checkEvents();
+      },
+      {
+        timezone: "Etc/UTC",
       }
     );
   }
