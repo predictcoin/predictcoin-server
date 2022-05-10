@@ -8,7 +8,7 @@
     "CrpLoserPool": "0xe6811535123458AE70cd0e0e3a19D3cc94bA8a7b",
     "CrpWinnerPool": "0x4d616250B31e23fbC5D87c46Bf3ec674131D7E50",
     
-    "CroSportsOracle": "0x492be37ffc7d76A72F3e5E3B694E82620Eeb9985",
+    "CroSportsOracle": "0x92B83224991f86419Ea9845107cE366d9d3CE3b5",
     "CRO": "0x7b8aD6d7560FAcd1959cfb4b4163D7d297c4bFc0"
   },
   "production": {
@@ -20,6 +20,7 @@
     "CrpLoserPool": "0xd9b4dD2b4dB9af58298593ef0709CE89fD8c154d",
     "CrpWinnerPool": "0xE91769d9bc4af9301d186b8834ea59f54BA41dE2",
 
+    "CroSportsOracle": "0x50D243085074661645748bB4e3A40EA8e4bef681",
     "CRO": "0x7b8aD6d7560FAcd1959cfb4b4163D7d297c4bFc0"
   },
   "staging": {
@@ -31,6 +32,7 @@
     "CrpLoserPool": "0x08Fd84D1f574Fe8d4b0425940DE40B844a679D7A",
     "CrpWinnerPool": "0x1eE1e446851609E535f0081904238356b03f72A4",
 
+    "CroSportsOracle": "0x960328Ec62756925402c1479C4186B518Ba451eC",
     "CRO": "0x7b8aD6d7560FAcd1959cfb4b4163D7d297c4bFc0"
   }
 }

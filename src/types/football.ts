@@ -83,3 +83,8 @@ export interface Score  {
   extratime: Goals,
   penalty: Goals,
 }
+
+export type apiFixture = {fixture: Fixture, league: FixtureLeague, teams: { home:FixtureTeam, away:FixtureTeam }, goals: Goals, score: Score};
+
+export type apiLeague = {league: League, country: Country, seasons: Season[]};
+

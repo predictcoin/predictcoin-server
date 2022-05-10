@@ -413,8 +413,6 @@ export const mockUpcomingMatches = [
         }
     ]
 
-const fixtureTime: any = {}
-
 export const mockLeague =
         {
             "league": {
@@ -1178,58 +1176,29 @@ export const mockTeams ={
         }
 }
 
-export const getMockUpcomingMatches = (date: string) => {
+export const getMockFixtures = (date: string) => {
     const _date = new Date().toISOString().split("T")[0];
-    const _ = new Date();
-    _.setDate(new Date().getDate() + 1)
-    const __date = _.toISOString().split("T")[0];
-    if(_date === date){
-        let matches = mockUpcomingMatches.slice(0,3);
-        matches = matches.map(match => {
-            const timestamp = Math.trunc(new Date().getTime()/1000);
-            const eventId = web3.utils.soliditySha3(
-                match.teams.home.name, match.teams.away.name, match.league.name, match.league.round,  
-                {type: "uint16", value: String(match.league.season)},
-                timestamp
-            )!;
+    let matches = _date === date ? mockUpcomingMatches.slice(0,3) : mockUpcomingMatches.slice(3,6);
+
+    matches = matches.map(match => {
+        const timestamp = Math.trunc(new Date().getTime()/1000);
+        match.fixture.date = _date;
+        match.fixture.timestamp = _date === date 
+            ? Math.round(Math.random() * (playPeriod - matchTime)) + timestamp
+            : Math.round(Math.random() *(playPeriod - matchTime)) + timestamp + playPeriod;
+        match.fixture.periods.first = match.fixture.timestamp;
+        match.fixture.periods.second = match.fixture.timestamp + 1*60;
         
-            match.fixture.timestamp = Math.round(Math.random() * (playPeriod - matchTime)) + timestamp;
-            match.fixture.periods.first = match.fixture.timestamp;
-            match.fixture.periods.second = match.fixture.timestamp + 1*60;
-            fixtureTime[eventId] = match.fixture.periods;
-            
-            return match;
-        })
+        return match;
+    })
 
-        return matches
-    }
-    else{
-        let matches = mockUpcomingMatches.slice(3,6);
-        matches = matches.map(match => {
-            const timestamp = Math.trunc(new Date().getTime()/1000) + playPeriod;
-                const eventId = web3.utils.soliditySha3(
-                match.teams.home.name, match.teams.away.name, match.league.name, match.league.round,  
-                {type: "uint16", value: String(match.league.season)},
-                timestamp
-            )!;
-
-            match.fixture.timestamp = Math.trunc(Math.random()* playPeriod - matchTime) + timestamp;
-            match.fixture.periods.first = match.fixture.timestamp;
-            match.fixture.periods.second = match.fixture.timestamp + 1*60;
-            fixtureTime[eventId] = match.fixture.periods;
-
-            return match;
-        })
-
-        return matches;
-    }
-
+    return matches
 }
 
-export const getMockFixtureWithTeamId = (id: number, timestamp: number) => {
+export const getMockFixtureWithTeam = (name: string, timestamp: number) => {
     const fixture = {...mockUpcomingMatches.filter(match => {
-        return match.teams.away.id === id
-            || match.teams.home.id === id
+        return match.teams.away.name === name
+            || match.teams.home.name === name
     })[0]};
     fixture.fixture = {...fixture.fixture};
     fixture.fixture.timestamp = timestamp;

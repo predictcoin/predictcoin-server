@@ -23,13 +23,13 @@ export const setCroProvider = async () => {
     }catch(error:any){
       // @ts-ignore
       console.error("Provider Message", error.message);
-      logger.error(`Provider: ${(error).message}}`);
+      logger.error(`Provider: ${(error).message}`);
       connected = false;
     }
 
     if(!connected){
-      console.log("changing provider");
-      logger.error(`Provider: Changing Provider to ${rpcUrls[counter]}}`)
+      console.log(`Provider: Changing Provider to ${rpcUrls[counter]}`);
+      logger.error(`Provider: Changing Provider to ${rpcUrls[counter]}`)
       web3.setProvider(rpcUrls[counter]);
       counter = counter+1 === rpcUrls.length ? 0 : counter+1;
     }else{
