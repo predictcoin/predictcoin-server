@@ -182,19 +182,19 @@ class CroSportOracleController {
       }
     }
 
-    if(cancelledEvents.length>1){ 
+    if(cancelledEvents.length>0){ 
       await runSendTx(
         async (callback: (_:boolean)=> void) => 
           await this.cancelEvents(cancelledEvents, callback)
       )
     };
-    if(endedEvents.length>1){ 
+    if(endedEvents.length>0){ 
       await runSendTx(
         async (callback: (_:boolean)=> void) => 
           await this.declareOutcomes(endedEvents, callback)
       )
     };
-    if(eventsToWatch.length>1){ await this.watchEvents(eventsToWatch) };
+    if(eventsToWatch.length>0){ await this.watchEvents(eventsToWatch) };
   }
 
   async declareOutcomes(events: {id: string, scoreA: number, scoreB: number}[], 
