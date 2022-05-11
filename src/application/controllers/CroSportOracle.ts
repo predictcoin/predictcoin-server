@@ -21,6 +21,7 @@ const runSendTx =  async (tx: (_:any) => Promise<void>) => {
     let status = false;
     const receiveStatus = (_status: boolean) => {status = _status };
     await tx(receiveStatus);
+    console.log("status", status);
     // @ts-ignore
     if(status === true) break;
   }   
@@ -186,20 +187,30 @@ class CroSportOracleController {
     if(cancelledEvents.length>1){ 
       await runSendTx(
         async (callback: (_:boolean)=> void) => 
-          await this.cancelEvents(cancelledEvents, callback)
+          await this.cancelEvents(cancelledEvents, callback, true)
       )
     };
     if(endedEvents.length>1){ 
       await runSendTx(
         async (callback: (_:boolean)=> void) => 
-          await this.declareOutcomes(endedEvents, callback)
+          await this.declareOutcomes(endedEvents, callback, true)
       )
     };
     if(eventsToWatch.length>1){ await this.watchEvents(eventsToWatch) };
   }
 
+  checkOutcome = async (
+    {id, _delay, callback}: {id: string, _delay?: boolean, callback?: (...params: any[]) => any}
+    ) => {
+      _delay && await delay(2000)
+      const event: CroSportEvent = (await callTx(getEvents(this.contract, [id])))[0];
+      const status = event.outcome !== EventOutcome.Pending;
+      callback && callback(status);
+  }
+
   async declareOutcomes(events: {id: string, scoreA: number, scoreB: number}[], 
-    callback?: (...params: any[]) => any
+    callback?: (...params: any[]) => any,
+    _delay?: boolean
   ){
     await sendTx(declareOutcomes(this.contract, events),
       (status: boolean, txHash) => {
@@ -209,12 +220,12 @@ class CroSportOracleController {
         console.log(message);
         logger.info(message);
         !status && Bugsnag.notify(new Error(message));
-        callback && callback(status);
+        this.checkOutcome({id: events[0].id, callback, _delay});
       }
     )
   }
 
-  async cancelEvents(events: string[], callback?: (...params: any[]) => any){
+  async cancelEvents(events: string[], callback?: (...params: any[]) => any, _delay?: boolean){
     await sendTx(cancelSportEvents(this.contract, events), 
       (status: boolean, txHash) => {
         const message = status 
@@ -223,7 +234,7 @@ class CroSportOracleController {
         console.log(message);
         logger.info(message);
         !status && Bugsnag.notify(new Error(message));
-        callback && callback(status);
+        this.checkOutcome({id: events[0], callback, _delay});
       }
     );
   }
@@ -317,7 +328,8 @@ class CroSportOracleController {
     _delay && await delay(2000);
     let present = false;
     const upcomingEvents: CroSportEvent[] = formatEvents(await callTx(getUpcomingEvents(this.contract)));
-    for(let i =0; i < upcomingEvents.length || !present; i++){
+    console.log(upcomingEvents);
+    for(let i =0; i < upcomingEvents.length && !present; i++){
       const event = upcomingEvents[i];
         if( process.env.NODE_ENV === "development" ) {
           const time = currentTimestamp();
@@ -326,6 +338,8 @@ class CroSportOracleController {
           present = new Date(+event.startTimestamp*1000).toISOString().split('T')[0] === from
         }
     }
+
+    console.log("present", present)
     return present;
   }
 
@@ -341,10 +355,11 @@ class CroSportOracleController {
 
       const checkTxSuccess = (from: string, callback: (status: boolean) => void) => async () => {
         const success = await this.checkEventsPresent({from, _delay: true});
-        callback(success);
+        console.log("success", success);
+        //callback(success);
       }
 
-      if(!present1) {
+      if(true) {
         await runSendTx(
           async (callback: (status: boolean) => void) => 
             await this.addNewEvents(length, from, checkTxSuccess(from, callback))
