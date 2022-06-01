@@ -46,9 +46,9 @@ app.get('/football-api', async function(req, res){
 app.listen(process.env.PORT || 5000);
 
 // start predictions
-// BscPrediction();
-// CrpPrediction();
-// CroSportOracle();
+BscPrediction();
+CrpPrediction();
+CroSportOracle();
 BscSportsOracle()
 
 export { emailController}; 
