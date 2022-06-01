@@ -1,7 +1,8 @@
 import { CroSportEvent } from "../application/domain/CroSportsOracle"
+import { BscSportEvent } from "../application/domain/BscSportsOracle"
 import web3 from "../application/insfrastructure/CroWeb3"
 
-export const formatEvents = (events: CroSportEvent[]): CroSportEvent[] => {
+export const formatEvents = (events: CroSportEvent[] | BscSportEvent[]): CroSportEvent[] | BscSportEvent[] => {
   return events.map( event => (
     {
       id: event.id!,
