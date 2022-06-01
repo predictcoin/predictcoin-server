@@ -364,7 +364,7 @@ class BscSportOracleController {
     cron.schedule(
       process.env.NODE_ENV === "development" 
         ? CronTime.every(playPeriod/60).minutes() 
-        : CronTime.everyDayAt(10, 28), //to be changed after the first run
+        : CronTime.everyDayAt(0, 0),
       async () => {
         await addEvents();
         await this.checkEvents();
