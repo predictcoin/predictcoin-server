@@ -12,6 +12,7 @@ import EmailClient from "./application/insfrastructure/Email";
 import BscPrediction from "./BscPrediction";
 import CrpPrediction from "./CrpPrediction";
 import CroSportOracle from "./CroSportOracle";
+import BscSportsOracle from "./BscSportOracle";
 import {callFootballApi} from "./application/insfrastructure/footballApi"
 
 install();
@@ -42,11 +43,12 @@ app.get('/football-api', async function(req, res){
   }
 });
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 5000);
 
 // start predictions
-BscPrediction();
-CrpPrediction();
-CroSportOracle();
+// BscPrediction();
+// CrpPrediction();
+// CroSportOracle();
+BscSportsOracle()
 
 export { emailController}; 
