@@ -1,5 +1,6 @@
 import getGasPrice from "../../utils/gasPrice";
 import { setCroProvider } from "../insfrastructure/CroWeb3";
+import { setBscProvider } from "../insfrastructure/BscWeb3";
 import createLock from "../../utils/SimpleLock";
 import delay from "delay";
 import logger from "../../utils/logger";
@@ -12,6 +13,8 @@ async function send(tx: any, callback?: (...param:any) => any){
   // checks and resets provider if CRO
   if(tx._ethAccounts._provider.host !== process.env.BSC_PROVIDER_API){
     await setCroProvider();
+  }else{
+    await setBscProvider();
   }
 
   //passing true to callback indicates a successfull tx and vice-versa
@@ -44,6 +47,8 @@ async function call( tx:any ){
   // checks and resets provider if CRO
   if(tx._ethAccounts._provider.host !== process.env.BSC_PROVIDER_API){
     await setCroProvider();
+  }else{
+    await setBscProvider();
   }
 
   try{

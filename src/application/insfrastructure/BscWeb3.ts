@@ -1,6 +1,39 @@
 import Web3 from "web3";
+import logger from "../../utils/logger";
 
-const web3 = new Web3(process.env.BSC_PROVIDER_API!);
+const rpcUrls = [
+  "https://bsc-mainnet.web3api.com/v1/Q3SYS628Q7NM9568343JHPK9HBNDRHUZ5K",
+  "https://bsc-dataseed.binance.org/"
+];
+
+const web3 = new Web3(rpcUrls[0]!);
+
+let counter = 1;
+
+export const setBscProvider = async () => {
+  for(;;){
+    let connected = false;
+
+    try{
+      connected = await web3.eth.net.isListening();
+    }catch(error:any){
+      // @ts-ignore
+      console.error("BscProvider Message", error.message);
+      logger.error(`BscProvider: ${(error).message}`);
+      connected = false;
+    }
+
+    if(!connected){
+      console.log(`BscProvider: Changing Provider to ${rpcUrls[counter]}`);
+      logger.error(`BscProvider: Changing Provider to ${rpcUrls[counter]}`)
+      web3.setProvider(rpcUrls[counter]);
+      counter = counter+1 === rpcUrls.length ? 0 : counter+1;
+    }else{
+      break
+    }
+  }
+}
+
 const wallet = web3.eth.accounts.wallet;
 wallet.add(process.env.PRIVATE_KEY!);
 
