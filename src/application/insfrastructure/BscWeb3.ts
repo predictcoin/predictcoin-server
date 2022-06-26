@@ -3,7 +3,8 @@ import logger from "../../utils/logger";
 
 const rpcUrls = [
   "https://bsc-mainnet.web3api.com/v1/Q3SYS628Q7NM9568343JHPK9HBNDRHUZ5K",
-  "https://bsc-dataseed.binance.org/"
+  "https://bsc-mainnet.web3api.com/v1/NSSSH2T61C7SV1GZGXMXTIRUGCPG6E9D9M",
+  "https://bsc-mainnet.web3api.com/v1/RSIMC156G2BAJ9V74DI5Z82P5ZCN12SY2X"
 ];
 
 const web3 = new Web3(rpcUrls[0]!);
