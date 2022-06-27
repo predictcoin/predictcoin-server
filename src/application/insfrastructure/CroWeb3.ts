@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import logger from "../../utils/logger";
-const rpcUrls = [
+export const rpcUrls = [
   "https://rpc.vvs.finance",
   "https://mmf-rpc.xstaking.sg/",
   "https://evm-cronos.crypto.org",
@@ -12,7 +12,7 @@ const rpcUrls = [
 
 const web3 = new Web3(rpcUrls[0]!);
 
-let counter = 1;
+export let counter = 1;
 
 export const setCroProvider = async () => {
   for(;;){

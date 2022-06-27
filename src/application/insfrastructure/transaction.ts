@@ -1,6 +1,6 @@
 import getGasPrice from "../../utils/gasPrice";
 import { setCroProvider } from "../insfrastructure/CroWeb3";
-import { setBscProvider } from "../insfrastructure/BscWeb3";
+import { setBscProvider, rpcUrls as bscRpcUrls, counter as bscCounter } from "../insfrastructure/BscWeb3";
 import createLock from "../../utils/SimpleLock";
 import delay from "delay";
 import logger from "../../utils/logger";
@@ -20,8 +20,11 @@ async function send(tx: any, callback?: (...param:any) => any){
   //passing true to callback indicates a successfull tx and vice-versa
   try {
     const gas = await tx.estimateGas();
-    const chain = tx._ethAccounts._provider.host !== process.env.BSC_PROVIDER_API ? "cro" : "bsc";
+    const chain = 
+      tx._ethAccounts._provider.host !== bscRpcUrls[bscCounter === 0 ? bscRpcUrls.length-1 : bscCounter-1] 
+        ? "cro" : "bsc";
     const gasPrice = await getGasPrice(chain);
+
     await tx.send({ gas: gas+100000, gasPrice  })
       .on('receipt', function(receipt:any){
         callback && callback(true, receipt.transactionHash);
