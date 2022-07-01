@@ -5,8 +5,27 @@ export const rpcUrls = [
   "https://bsc-mainnet.web3api.com/v1/Q3SYS628Q7NM9568343JHPK9HBNDRHUZ5K",
   "https://bsc-mainnet.web3api.com/v1/NSSSH2T61C7SV1GZGXMXTIRUGCPG6E9D9M",
   "https://bsc-mainnet.web3api.com/v1/RSIMC156G2BAJ9V74DI5Z82P5ZCN12SY2X",
-  "https://bsc-dataseed.binance.org/"
+  "https://bsc-dataseed.binance.org/",
+  "https://bsc-dataseed3.defibit.io",
+  "https://binance.nodereal.io",
+  "https://bscrpc.com",
+  "https://bsc-dataseed3.binance.org",
+  "https://bsc-dataseed1.binance.org",
+  "https://bsc-dataseed2.binance.org",
+  "https://bsc-dataseed2.defibit.io",
+  "https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3",
+  "https://bsc-dataseed1.ninicoin.io",
+  "https://bsc-dataseed3.ninicoin.io",
+  "https://bsc-dataseed1.defibit.io",
+  "https://bsc-dataseed2.ninicoin.io",
+  "https://bsc-dataseed4.defibit.io",
+  "https://rpc.ankr.com/bsc",
+  "https://bsc-dataseed4.binance.org",
+  "https://bsc.mytokenpocket.vip",
+  "https://rpc-bsc.bnb48.club",
+  "https://bsc-dataseed4.ninicoin.io"
 ];
+
 
 const web3 = new Web3(rpcUrls[0]!);
 
