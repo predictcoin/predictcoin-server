@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import logger from "../../utils/logger";
-const rpcUrls = [
+export const rpcUrls = [
   "https://rpc.vvs.finance",
   "https://mmf-rpc.xstaking.sg/",
   "https://evm-cronos.crypto.org",
@@ -12,7 +12,7 @@ const rpcUrls = [
 
 const web3 = new Web3(rpcUrls[0]!);
 
-let counter = 1;
+export let counter = 1;
 
 export const setCroProvider = async () => {
   for(;;){
@@ -22,14 +22,14 @@ export const setCroProvider = async () => {
       connected = await web3.eth.net.isListening();
     }catch(error:any){
       // @ts-ignore
-      console.error("Provider Message", error.message);
-      logger.error(`Provider: ${(error).message}`);
+      console.error("CroProvider Message", error.message);
+      logger.error(`CroProvider: ${(error).message}`);
       connected = false;
     }
 
     if(!connected){
-      console.log(`Provider: Changing Provider to ${rpcUrls[counter]}`);
-      logger.error(`Provider: Changing Provider to ${rpcUrls[counter]}`)
+      console.log(`CroProvider: Changing Provider to ${rpcUrls[counter]}`);
+      logger.error(`CroProvider: Changing Provider to ${rpcUrls[counter]}`)
       web3.setProvider(rpcUrls[counter]);
       counter = counter+1 === rpcUrls.length ? 0 : counter+1;
     }else{
