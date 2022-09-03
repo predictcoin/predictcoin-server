@@ -68,16 +68,14 @@ class BscPredictController{
 
     // add pools if round ends with no pools
     if(round.oraclesCalled === true ) {
-      console.log("current")
       if(winnerEpoch.epoch !== epoch ){
-        sendTx(winnerPoolController.addPool(epoch))
+        winnerPoolController.addPool(epoch)
       }
       if(loserEpoch.epoch !== epoch){
-        sendTx(loserPoolController.addPool(epoch))
+        loserPoolController.addPool(epoch)
       }
     }
     else {
-      console.log("former")
       const formerRound = await this.getRound(+epoch-1);
       if(!formerRound.oraclesCalled) return;
       if(winnerEpoch.epoch !== formerRound.epoch ){
