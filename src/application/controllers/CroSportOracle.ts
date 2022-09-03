@@ -328,7 +328,6 @@ class CroSportOracleController {
     _delay && await delay(2000);
     let present = false;
     const upcomingEvents: CroSportEvent[] = formatEvents(await callTx(getUpcomingEvents(this.contract)));
-    console.log(upcomingEvents);
     for(let i =0; i < upcomingEvents.length && !present; i++){
       const event = upcomingEvents[i];
         if( process.env.NODE_ENV === "development" ) {
