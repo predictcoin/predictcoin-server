@@ -23,4 +23,17 @@ export interface Round {
   9: string[];
 }
 
+export interface Pool {
+  allocPoint: string;
+  lastRewardBlock: string;
+  accBIDPerShare: string;
+  epoch: string;
+  amount: string;
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
+}
+
 export interface BscPredict extends BscPrediction {};

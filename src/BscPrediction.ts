@@ -1,7 +1,7 @@
 
 
 import BscPredictController from "./application/controllers/BscPredict";
-import { predictionContract } from "./application/insfrastructure/BscContracts";
+import { predictionContract, } from "./application/insfrastructure/BscContracts";
 
  
 const predictionController = new BscPredictController(predictionContract);
@@ -14,12 +14,18 @@ const BscPrediction = async () => {
 
   // const bufferSeconds = await predictionController.getBufferSeconds();
   // const endTime = +round.closeTimestamp + bufferSeconds;
-  
+
   console.log("Checking Bsc Prediction");
+  // schedule end round if round has started
   if (round.oraclesCalled === false) {
     if (+round.endTimestamp*1000 > Date.now()) 
-      predictionController.scheduleEndRound();
+    await predictionController.scheduleEndRound();
+  }else if(process.env.NODE_ENV === "development"){
+    await predictionController.startRound()
   }
+
+  // add pools if they arent there already
+  await predictionController.addPools()
   
   await predictionController.scheduleStartRound();
 };

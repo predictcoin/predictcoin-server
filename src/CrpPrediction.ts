@@ -19,7 +19,12 @@ const CrpPrediction = async () => {
   if (round.oraclesCalled === false) {
     if (+round.closeTimestamp*1000 > Date.now()) 
       predictionController.scheduleEndRound();
+  }else if(process.env.NODE_ENV === "development"){
+    await predictionController.startRound()
   }
+
+  // add pools if they arent there already
+  await predictionController.addPools()
   
   await predictionController.scheduleStartRound();
 };

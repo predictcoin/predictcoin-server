@@ -2,6 +2,7 @@ import Web3 from "web3";
 import logger from "../../utils/logger";
 
 export const rpcUrls = [
+  process.env.BSC_PROVIDER_API!,
   "https://bsc-dataseed.binance.org/",
   "https://bsc-dataseed3.defibit.io",
   "https://binance.nodereal.io",

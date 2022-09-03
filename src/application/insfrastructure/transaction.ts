@@ -59,7 +59,7 @@ async function call( tx:any ){
     return res;
   }
   catch(error:any){
-    const message = `SendTx: ${error.message}`;
+    const message = `CallTx: ${error.message}`;
     console.error(message);
     logger.error(message);
     Bugsnag.notify(new Error(message));

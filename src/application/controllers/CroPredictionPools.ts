@@ -1,7 +1,8 @@
 import { _CroLoserPool, _CroWinnerPool } from "../domain/CroPredictionPools";
 import {send as sendTx, call as callTx, call} from "../insfrastructure/transaction";
-import { addPool } from "../usecases/CroPredictionPools";
+import { addPool, getEpochLength, getPool } from "../usecases/CroPredictionPools";
 import { emailController } from "../..";
+import { Pool } from "../domain/BscPredict";
 
 class PredictionPoolController {
   contract: _CroLoserPool | _CroWinnerPool;
@@ -21,6 +22,11 @@ class PredictionPoolController {
 
   async addPool(round: string | number){
     await sendTx(addPool(this.contract, round), this.callback(round));
+  }
+
+  async currentEpoch (): Promise<Pool>{
+    const index = BigInt(await callTx(getEpochLength(this.contract))) - BigInt(1);
+    return callTx(getPool(this.contract, index.toString()));
   }
 }
 

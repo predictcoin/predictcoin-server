@@ -20,8 +20,8 @@ import PredictionPoolController from "./BscPredictionPools";
 import { loserPoolContract, winnerPoolContract } from "../insfrastructure/BscContracts";
 
 
-const winnerPoolController = new PredictionPoolController(loserPoolContract);
-const loserPoolController = new PredictionPoolController(winnerPoolContract)
+const winnerPoolController = new PredictionPoolController(winnerPoolContract);
+const loserPoolController = new PredictionPoolController(loserPoolContract)
 
 class BscPredictController{
   contract: _BscPredict;
@@ -29,7 +29,7 @@ class BscPredictController{
 
   private endCallback = async (status: boolean, ...msg: string[]) => {
     const epoch = await this.getCurrentRound();
-    if (epoch === 0) return;
+    if (epoch === "0") return;
     let title;
     if (status) {
       title = `Predictcoin: Ended Epoch ${epoch} successfully`;
@@ -60,6 +60,35 @@ class BscPredictController{
     this.emailController = emailController
   }
 
+  async addPools(){
+    const epoch = await this.getCurrentRound();
+    const round = await this.getRound(epoch);
+    const winnerEpoch = await winnerPoolController.currentEpoch();
+    const loserEpoch = await loserPoolController.currentEpoch();
+
+    // add pools if round ends with no pools
+    if(round.oraclesCalled === true ) {
+      console.log("current")
+      if(winnerEpoch.epoch !== epoch ){
+        sendTx(winnerPoolController.addPool(epoch))
+      }
+      if(loserEpoch.epoch !== epoch){
+        sendTx(loserPoolController.addPool(epoch))
+      }
+    }
+    else {
+      console.log("former")
+      const formerRound = await this.getRound(+epoch-1);
+      if(!formerRound.oraclesCalled) return;
+      if(winnerEpoch.epoch !== formerRound.epoch ){
+        winnerPoolController.addPool(formerRound.epoch)
+      }
+      if(loserEpoch.epoch !== formerRound.epoch){
+        loserPoolController.addPool(formerRound.epoch)
+      }
+    }
+  }
+
   async startRound (){
     await sendTx(startRound(this.contract), this.startCallback);
   }
@@ -68,7 +97,7 @@ class BscPredictController{
     await sendTx(endRound(this.contract), this.endCallback);
   }
 
-  async getCurrentRound(): Promise<number>{
+  async getCurrentRound(): Promise<string>{
     return callTx(getCurrentRound(this.contract));
   }
 
@@ -87,7 +116,7 @@ class BscPredictController{
   async scheduleStartRound (): Promise<void> {
     const schedule = process.env.NODE_ENV === "production" 
       ? cronTime.everyMondayAt(13, 0) 
-      : cronTime.every(6).minutes();
+      : cronTime.every(2).minutes();
     cron.schedule(schedule,  async () => {
       await this.startRound();
     });
