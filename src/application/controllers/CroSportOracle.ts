@@ -204,7 +204,7 @@ class CroSportOracleController {
     ) => {
       _delay && await delay(2000)
       const event: CroSportEvent = (await callTx(getEvents(this.contract, [id])))[0];
-      const status = event.outcome !== EventOutcome.Pending;
+      const status = Number(event.outcome) !== EventOutcome.Pending;
       callback && callback(status);
   }
 
