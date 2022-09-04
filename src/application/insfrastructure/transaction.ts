@@ -5,6 +5,8 @@ import createLock from "../../utils/SimpleLock";
 import delay from "delay";
 import logger from "../../utils/logger";
 import Bugsnag from "../../utils/notification";
+import bscWeb3 from "./BscWeb3";
+import croWeb3 from "./CroWeb3";
 
 const lock = createLock("sendTransaction");
 
@@ -19,13 +21,21 @@ async function send(tx: any, callback?: (...param:any) => any){
 
   //passing true to callback indicates a successfull tx and vice-versa
   try {
-    const gas = await tx.estimateGas();
+    const gas = await tx.estimateGas() + 100000;
     const chain = 
       tx._ethAccounts._provider.host !== bscRpcUrls[bscCounter === 0 ? bscRpcUrls.length-1 : bscCounter-1] 
         ? "cro" : "bsc";
-    const gasPrice = await getGasPrice(chain);
+    const provider = chain === "cro" ? croWeb3 : bscWeb3;
 
-    await tx.send({ gas: gas+100000, gasPrice  })
+    const balance = await provider.eth.getBalance(( provider.eth.accounts.wallet[0].address ));
+    const gasPrice = await getGasPrice(chain);
+    const fee = BigInt(gas) * BigInt(gasPrice);
+
+    if(fee > BigInt(balance)){
+      throw new Error("Insufficient balance for transaction on " + chain)
+    }
+
+    await tx.send({ gas: gas, gasPrice  })
       .on('receipt', function(receipt:any){
         callback && callback(true, receipt.transactionHash);
       })

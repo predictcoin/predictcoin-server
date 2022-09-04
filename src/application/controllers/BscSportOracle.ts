@@ -329,7 +329,7 @@ class BscSportOracleController {
           
           if (present1) break;
       }
-      console.log(present1);
+      if(present1) console.log("Events already present on BSC for " + from)
 
       if(!present1) {
         await runSendTx(async (callback) => await this.addNewEvents(length, from, callback));
@@ -351,7 +351,7 @@ class BscSportOracleController {
 
           if (present2) break;
       };
-      console.log(present2);
+      if(present2) console.log("Events already present on BSC for " + from)
 
       if(!present2) {
         await runSendTx(async (callback) => await this.addNewEvents(length, from, callback));

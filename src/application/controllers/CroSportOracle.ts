@@ -337,8 +337,7 @@ class CroSportOracleController {
           present = new Date(+event.startTimestamp*1000).toISOString().split('T')[0] === from
         }
     }
-
-    console.log("present", present)
+    
     return present;
   }
 
@@ -350,7 +349,7 @@ class CroSportOracleController {
       let from = date.toISOString().split('T')[0];
       let present1: boolean, present2: boolean;
       present1 = await this.checkEventsPresent({from})
-      console.log(present1);
+      if(present1) console.log("Events already present on CRO for " + from)
 
       const checkTxSuccess = (from: string, callback: (status: boolean) => void) => async () => {
         const success = await this.checkEventsPresent({from, _delay: true});
@@ -358,7 +357,7 @@ class CroSportOracleController {
         //callback(success);
       }
 
-      if(true) {
+      if(!present1) {
         await runSendTx(
           async (callback: (status: boolean) => void) => 
             await this.addNewEvents(length, from, checkTxSuccess(from, callback))
@@ -369,7 +368,7 @@ class CroSportOracleController {
       date.setDate(date.getDate() + 1);
       from = date.toISOString().split("T")[0];
       present2 = await this.checkEventsPresent({from});
-      console.log(present2);
+      if(present2) console.log("Events already present on CRO for " + from)
 
       if(!present2) {
         await runSendTx(
